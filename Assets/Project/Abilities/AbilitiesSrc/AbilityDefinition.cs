@@ -74,9 +74,9 @@ namespace TetrisTactic.Abilities
                 AbilityDefinitionId.S => new AbilityDefinition(definitionId, AbilityShapeType.S, "S", new[]
                 {
                     new AbilityShapeCell(0, 0),
-                    new AbilityShapeCell(1, 0),
-                    new AbilityShapeCell(-1, 1),
                     new AbilityShapeCell(0, 1),
+                    new AbilityShapeCell(1, 1),
+                    new AbilityShapeCell(1, 2),
                 }),
                 AbilityDefinitionId.I => new AbilityDefinition(definitionId, AbilityShapeType.I, "I", new[]
                 {
