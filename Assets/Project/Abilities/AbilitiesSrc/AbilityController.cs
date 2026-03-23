@@ -310,10 +310,13 @@ namespace TetrisTactic.Abilities
             for (var i = 0; i < abilities.Count; i++)
             {
                 var index = i;
-                var abilityLabel = abilities[i].Definition.DisplayName;
+                var definition = abilities[i].Definition;
+                var abilityIcon = AbilityButtonIconResolver.Resolve(abilityConfig, definition.DefinitionId);
+                var abilityLabel = definition.DisplayName;
                 var isSelected = index == selectedAbilityIndex;
                 actionPanel.ConfigureAbilityButton(
                     i,
+                    abilityIcon,
                     abilityLabel,
                     isSelected,
                     !isResolving,

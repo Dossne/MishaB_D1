@@ -8,18 +8,20 @@ namespace TetrisTactic.Abilities
     {
         [SerializeField] private Button button;
         [SerializeField] private Image background;
+        [SerializeField] private Image icon;
         [SerializeField] private Text label;
 
         private static Sprite fallbackSprite;
 
-        public void BindView(Button boundButton, Image boundBackground, Text boundLabel)
+        public void BindView(Button boundButton, Image boundBackground, Image boundIcon, Text boundLabel)
         {
             button = boundButton;
             background = boundBackground;
+            icon = boundIcon;
             label = boundLabel;
         }
 
-        public void Bind(string labelText, System.Action onPressed, bool interactable, bool selected)
+        public void Bind(Sprite iconSprite, string labelText, System.Action onPressed, bool interactable, bool selected)
         {
             if (button == null || background == null || label == null)
             {
@@ -33,7 +35,14 @@ namespace TetrisTactic.Abilities
             }
 
             button.interactable = interactable;
-            GameTextStyling.SetUiText(label, labelText);
+            if (icon != null)
+            {
+                icon.sprite = iconSprite;
+                icon.enabled = iconSprite != null;
+            }
+
+            GameTextStyling.SetUiText(label, iconSprite == null ? labelText : string.Empty);
+            label.enabled = iconSprite == null;
             background.color = selected
                 ? new Color(0.78f, 0.47f, 0.17f, 1f)
                 : new Color(0.24f, 0.31f, 0.44f, 1f);
@@ -57,4 +66,3 @@ namespace TetrisTactic.Abilities
         }
     }
 }
-

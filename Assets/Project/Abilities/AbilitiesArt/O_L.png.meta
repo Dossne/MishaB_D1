@@ -1,19 +1,22 @@
 fileFormatVersion: 2
-guid: b8ae600071b472a45b93ef6757d74d63
+guid: d80168d46a54fda4d9acec2625ab0d5b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -873692153810231396
-    second: mage_ability_0
+      213: 2583816018211610179
+    second: O_L_0
   - first:
-      213: -6981430131747417010
-    second: mage_ability_1
+      213: -391091055853881340
+    second: O_L_1
   - first:
-      213: 6234100474724429243
-    second: mage_ability_2
+      213: -1520795399151360616
+    second: O_L_2
   - first:
-      213: 5568378622710646339
-    second: mage_ability_3
+      213: -2273517076350380558
+    second: O_L_3
+  - first:
+      213: 9210614221946624004
+    second: O_L_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -135,23 +138,111 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: mage_ability_0
+      name: O_L_0
       rect:
         serializedVersion: 2
-        x: 84
-        y: 95
-        width: 329
-        height: 330
+        x: 0
+        y: 1
+        width: 256
+        height: 255
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e449cfcc84afc1f90800000000000000
-      internalID: -6981430131747417010
+      spriteID: 34e977a9afe8bd320800000000000000
+      internalID: 2583816018211610179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: O_L_1
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 235
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4083ffcb1c0929af0800000000000000
+      internalID: -391091055853881340
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: O_L_2
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 241
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 895e88954ac05eae0800000000000000
+      internalID: -1520795399151360616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: O_L_3
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 245
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f5d951c348d270e0800000000000000
+      internalID: -2273517076350380558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: O_L_4
+      rect:
+        serializedVersion: 2
+        x: 250
+        y: 102
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4081a4eb5dca2df70800000000000000
+      internalID: 9210614221946624004
       vertices: []
       indices: 
       edges: []
@@ -160,7 +251,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6aeb8671a3d3a534da37b565e6765fa3
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -170,9 +261,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      mage_ability_0: -6981430131747417010
-      mage_ability_2: 6234100474724429243
-      mage_ability_3: 5568378622710646339
+      O_L_0: 2583816018211610179
+      O_L_1: -391091055853881340
+      O_L_2: -1520795399151360616
+      O_L_3: -2273517076350380558
+      O_L_4: 9210614221946624004
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

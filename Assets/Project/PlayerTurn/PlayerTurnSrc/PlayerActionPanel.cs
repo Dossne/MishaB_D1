@@ -83,14 +83,14 @@ namespace TetrisTactic.PlayerTurn
             }
         }
 
-        public void ConfigureAbilityButton(int index, string label, bool selected, bool interactable, Action onPressed)
+        public void ConfigureAbilityButton(int index, Sprite icon, string label, bool selected, bool interactable, Action onPressed)
         {
             if (index < 0 || index >= abilityButtons.Count)
             {
                 return;
             }
 
-            abilityButtons[index].Bind(label, onPressed, interactable, selected);
+            abilityButtons[index].Bind(icon, label, onPressed, interactable, selected);
             abilityButtons[index].gameObject.SetActive(true);
         }
 
@@ -149,6 +149,19 @@ namespace TetrisTactic.PlayerTurn
             var image = buttonObject.GetComponent<Image>();
             image.color = new Color(0.24f, 0.31f, 0.44f, 1f);
 
+            var iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            var iconRect = iconObject.GetComponent<RectTransform>();
+            iconRect.SetParent(rectTransform, false);
+            iconRect.anchorMin = Vector2.zero;
+            iconRect.anchorMax = Vector2.one;
+            iconRect.offsetMin = new Vector2(20f, 12f);
+            iconRect.offsetMax = new Vector2(-20f, -12f);
+
+            var iconImage = iconObject.GetComponent<Image>();
+            iconImage.preserveAspect = true;
+            iconImage.color = Color.white;
+            iconImage.enabled = false;
+
             var textObject = new GameObject("Label", typeof(RectTransform), typeof(Text));
             var textRect = textObject.GetComponent<RectTransform>();
             textRect.SetParent(rectTransform, false);
@@ -164,7 +177,7 @@ namespace TetrisTactic.PlayerTurn
             text.color = Color.white;
 
             var view = buttonObject.GetComponent<AbilityButtonView>();
-            view.BindView(buttonObject.GetComponent<Button>(), image, text);
+            view.BindView(buttonObject.GetComponent<Button>(), image, iconImage, text);
             return view;
         }
 
@@ -199,4 +212,3 @@ namespace TetrisTactic.PlayerTurn
         }
     }
 }
-

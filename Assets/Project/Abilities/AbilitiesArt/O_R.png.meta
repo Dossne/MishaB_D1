@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: b8ae600071b472a45b93ef6757d74d63
+guid: 6599362458fb4114591c846ab5555cae
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -873692153810231396
-    second: mage_ability_0
+      213: -7979142137282503250
+    second: O_R_0
   - first:
-      213: -6981430131747417010
-    second: mage_ability_1
+      213: -6249318147268464960
+    second: O_R_1
   - first:
-      213: 6234100474724429243
-    second: mage_ability_2
+      213: 5147279143625990543
+    second: O_R_2
   - first:
-      213: 5568378622710646339
-    second: mage_ability_3
+      213: -2477247980017988777
+    second: O_R_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -135,23 +135,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: mage_ability_0
+      name: O_R_0
       rect:
         serializedVersion: 2
-        x: 84
-        y: 95
-        width: 329
-        height: 330
+        x: 0
+        y: 2
+        width: 256
+        height: 254
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e449cfcc84afc1f90800000000000000
-      internalID: -6981430131747417010
+      spriteID: eaddcee5084644190800000000000000
+      internalID: -7979142137282503250
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: O_R_1
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 246
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ce29af5146f549a0800000000000000
+      internalID: -6249318147268464960
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: O_R_2
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 164
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f81aa931c1fce6740800000000000000
+      internalID: 5147279143625990543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: O_R_3
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 88
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75b4972561c0f9dd0800000000000000
+      internalID: -2477247980017988777
       vertices: []
       indices: 
       edges: []
@@ -160,7 +226,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6aeb8671a3d3a534da37b565e6765fa3
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -170,9 +236,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      mage_ability_0: -6981430131747417010
-      mage_ability_2: 6234100474724429243
-      mage_ability_3: 5568378622710646339
+      O_R_0: -7979142137282503250
+      O_R_1: -6249318147268464960
+      O_R_2: 5147279143625990543
+      O_R_3: -2477247980017988777
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

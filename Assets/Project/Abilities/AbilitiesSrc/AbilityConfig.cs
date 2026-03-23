@@ -3,6 +3,13 @@ using UnityEngine;
 
 namespace TetrisTactic.Abilities
 {
+    [System.Serializable]
+    public sealed class AbilityButtonIconEntry
+    {
+        public AbilityDefinitionId definitionId;
+        public Sprite icon;
+    }
+
     [CreateAssetMenu(menuName = "Project/Abilities/Ability Config", fileName = "AbilityConfig")]
     public sealed class AbilityConfig : ScriptableObject
     {
@@ -24,6 +31,7 @@ namespace TetrisTactic.Abilities
             AbilityDefinitionId.I,
         };
 
+        [SerializeField] private List<AbilityButtonIconEntry> buttonIcons = new();
         [SerializeField, Min(1)] private int maxAvailableAbilities = 3;
         [SerializeField, Min(0)] private int waitAbilityGainThreshold = 2;
         [SerializeField, Min(0.01f)] private float waveCellDelay = 0.08f;
@@ -37,6 +45,20 @@ namespace TetrisTactic.Abilities
         public float WaveCellDelay => Mathf.Max(0.01f, waveCellDelay);
         public float ImpactDuration => Mathf.Max(0.01f, impactDuration);
         public bool EnableAbilityQueueDebugLogs => enableAbilityQueueDebugLogs;
+
+        public Sprite GetButtonIcon(AbilityDefinitionId definitionId)
+        {
+            for (var i = 0; i < buttonIcons.Count; i++)
+            {
+                var entry = buttonIcons[i];
+                if (entry != null && entry.definitionId == definitionId)
+                {
+                    return entry.icon;
+                }
+            }
+
+            return null;
+        }
 
         public static AbilityConfig CreateDefault()
         {
