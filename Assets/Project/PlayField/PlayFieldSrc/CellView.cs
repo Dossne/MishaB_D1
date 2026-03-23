@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace TetrisTactic.PlayField
 {
@@ -25,6 +25,7 @@ namespace TetrisTactic.PlayField
             }
 
             spriteRenderer.sprite = sprite;
+            spriteRenderer.sortingOrder = 0;
             transform.localScale = new Vector3(worldSize, worldSize, 1f);
 
             var collider = GetComponent<BoxCollider2D>();

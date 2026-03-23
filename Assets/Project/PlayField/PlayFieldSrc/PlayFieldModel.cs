@@ -1,4 +1,8 @@
-﻿namespace TetrisTactic.PlayField
+using System.Collections.Generic;
+using TetrisTactic.Treasure;
+using TetrisTactic.Units;
+
+namespace TetrisTactic.PlayField
 {
     public enum CellContentType
     {
@@ -11,17 +15,24 @@
 
     public sealed class PlayFieldModel
     {
-        private readonly CellContentType[,] cells;
+        private readonly Dictionary<GridPosition, UnitRuntimeModel> unitsByPosition = new();
+        private readonly Dictionary<GridPosition, TreasureData> treasuresByPosition = new();
+        private readonly HashSet<GridPosition> obstacles = new();
+        private readonly List<UnitRuntimeModel> enemies = new();
+        private readonly List<TreasureData> treasures = new();
 
         public PlayFieldModel(int columns, int rows)
         {
             Columns = columns;
             Rows = rows;
-            cells = new CellContentType[columns, rows];
         }
 
         public int Columns { get; }
         public int Rows { get; }
+        public UnitRuntimeModel PlayerUnit { get; private set; }
+        public IReadOnlyList<UnitRuntimeModel> EnemyUnits => enemies;
+        public IReadOnlyList<TreasureData> Treasures => treasures;
+        public IReadOnlyCollection<GridPosition> Obstacles => obstacles;
 
         public bool IsInside(GridPosition position)
         {
@@ -35,28 +46,145 @@
                 return CellContentType.Empty;
             }
 
-            return cells[position.X, position.Y];
+            if (PlayerUnit != null && PlayerUnit.Position == position)
+            {
+                return CellContentType.Player;
+            }
+
+            if (unitsByPosition.TryGetValue(position, out var unit))
+            {
+                return unit.TeamType == TeamType.Enemy
+                    ? CellContentType.Enemy
+                    : CellContentType.Player;
+            }
+
+            if (treasuresByPosition.ContainsKey(position))
+            {
+                return CellContentType.Treasure;
+            }
+
+            return obstacles.Contains(position)
+                ? CellContentType.Obstacle
+                : CellContentType.Empty;
         }
 
-        public void SetCell(GridPosition position, CellContentType content)
+        public bool HasUnitAt(GridPosition position)
+        {
+            return unitsByPosition.ContainsKey(position);
+        }
+
+        public bool HasTreasureAt(GridPosition position)
+        {
+            return treasuresByPosition.ContainsKey(position);
+        }
+
+        public bool IsObstacle(GridPosition position)
+        {
+            return obstacles.Contains(position);
+        }
+
+        public bool IsEmpty(GridPosition position)
         {
             if (!IsInside(position))
             {
-                return;
+                return false;
             }
 
-            cells[position.X, position.Y] = content;
+            return !HasUnitAt(position) && !HasTreasureAt(position) && !IsObstacle(position);
+        }
+
+        public bool TrySetPlayer(UnitRuntimeModel playerUnit)
+        {
+            if (playerUnit == null || playerUnit.TeamType != TeamType.Player)
+            {
+                return false;
+            }
+
+            if (!CanPlaceOn(playerUnit.Position))
+            {
+                return false;
+            }
+
+            PlayerUnit = playerUnit;
+            unitsByPosition[playerUnit.Position] = playerUnit;
+            return true;
+        }
+
+        public bool TryAddEnemy(UnitRuntimeModel enemyUnit)
+        {
+            if (enemyUnit == null || enemyUnit.TeamType != TeamType.Enemy)
+            {
+                return false;
+            }
+
+            if (!CanPlaceOn(enemyUnit.Position))
+            {
+                return false;
+            }
+
+            enemies.Add(enemyUnit);
+            unitsByPosition[enemyUnit.Position] = enemyUnit;
+            return true;
+        }
+
+        public bool TryAddTreasure(TreasureData treasureData)
+        {
+            if (treasureData == null)
+            {
+                return false;
+            }
+
+            if (!CanPlaceOn(treasureData.Position))
+            {
+                return false;
+            }
+
+            treasures.Add(treasureData);
+            treasuresByPosition[treasureData.Position] = treasureData;
+            return true;
+        }
+
+        public bool TryAddObstacle(GridPosition obstaclePosition)
+        {
+            if (!CanPlaceOn(obstaclePosition))
+            {
+                return false;
+            }
+
+            return obstacles.Add(obstaclePosition);
+        }
+
+        public bool RemoveObstacle(GridPosition obstaclePosition)
+        {
+            return obstacles.Remove(obstaclePosition);
+        }
+
+        public IEnumerable<UnitRuntimeModel> GetAllUnits()
+        {
+            if (PlayerUnit != null)
+            {
+                yield return PlayerUnit;
+            }
+
+            for (var i = 0; i < enemies.Count; i++)
+            {
+                yield return enemies[i];
+            }
         }
 
         public void ClearAll()
         {
-            for (var x = 0; x < Columns; x++)
-            {
-                for (var y = 0; y < Rows; y++)
-                {
-                    cells[x, y] = CellContentType.Empty;
-                }
-            }
+            unitsByPosition.Clear();
+            treasuresByPosition.Clear();
+            obstacles.Clear();
+            enemies.Clear();
+            treasures.Clear();
+            PlayerUnit = null;
+        }
+
+        private bool CanPlaceOn(GridPosition position)
+        {
+            return IsInside(position) && IsEmpty(position);
         }
     }
 }

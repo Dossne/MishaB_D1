@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using TetrisTactic.Treasure;
+using TetrisTactic.Units;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -11,8 +13,10 @@ namespace TetrisTactic.PlayField
         public event System.Action<GridPosition> CellTapped;
 
         [SerializeField] private Transform cellRoot;
+        [SerializeField] private Transform contentRoot;
 
         private readonly Dictionary<GridPosition, CellView> cellViews = new();
+        private readonly List<GameObject> spawnedContentObjects = new();
 
         private PlayFieldConfig playFieldConfig;
         private Sprite defaultCellSprite;
@@ -49,7 +53,7 @@ namespace TetrisTactic.PlayField
         public void Initialize(PlayFieldConfig config)
         {
             playFieldConfig = config;
-            EnsureRoot();
+            EnsureRoots();
 
             if (defaultCellSprite == null)
             {
@@ -69,7 +73,7 @@ namespace TetrisTactic.PlayField
                 playFieldConfig = PlayFieldConfig.CreateDefault();
             }
 
-            EnsureRoot();
+            EnsureRoots();
 
             if (defaultCellSprite == null)
             {
@@ -92,6 +96,8 @@ namespace TetrisTactic.PlayField
                     }
                 }
             }
+
+            RenderContent(model);
         }
 
         public void Clear()
@@ -106,6 +112,7 @@ namespace TetrisTactic.PlayField
             }
 
             cellViews.Clear();
+            ClearContent();
             currentColumns = 0;
             currentRows = 0;
         }
@@ -146,6 +153,66 @@ namespace TetrisTactic.PlayField
             }
         }
 
+        private void RenderContent(PlayFieldModel model)
+        {
+            ClearContent();
+
+            foreach (var obstaclePosition in model.Obstacles)
+            {
+                var obstacleObject = CreateContentObject($"Obstacle_{obstaclePosition.X}_{obstaclePosition.Y}", obstaclePosition);
+                var spriteRenderer = obstacleObject.AddComponent<SpriteRenderer>();
+                spriteRenderer.sprite = defaultCellSprite;
+                spriteRenderer.color = playFieldConfig.ObstacleCellColor;
+                spriteRenderer.sortingOrder = 5;
+                obstacleObject.transform.localScale = Vector3.one * (playFieldConfig.CellWorldSize * 0.52f);
+            }
+
+            var treasures = model.Treasures;
+            for (var i = 0; i < treasures.Count; i++)
+            {
+                var treasure = treasures[i];
+                var treasureObject = CreateContentObject($"Treasure_{treasure.Position.X}_{treasure.Position.Y}", treasure.Position);
+                var treasureView = treasureObject.AddComponent<TreasureView>();
+                treasureView.Initialize(treasure, playFieldConfig.CellWorldSize, playFieldConfig.TreasureCellColor);
+            }
+
+            foreach (var unit in model.GetAllUnits())
+            {
+                var unitObject = CreateContentObject($"{unit.UnitType}_{unit.Position.X}_{unit.Position.Y}", unit.Position);
+                var unitView = unitObject.AddComponent<UnitView>();
+                unitView.Initialize(unit, playFieldConfig.CellWorldSize, GetUnitColor(unit));
+            }
+        }
+
+        private GameObject CreateContentObject(string name, GridPosition position)
+        {
+            var contentObject = new GameObject(name);
+            contentObject.transform.SetParent(contentRoot, false);
+            contentObject.transform.localPosition = GetCellLocalPosition(position.X, position.Y, currentColumns, currentRows);
+            spawnedContentObjects.Add(contentObject);
+            return contentObject;
+        }
+
+        private void ClearContent()
+        {
+            for (var i = 0; i < spawnedContentObjects.Count; i++)
+            {
+                if (spawnedContentObjects[i] != null)
+                {
+                    Destroy(spawnedContentObjects[i]);
+                }
+            }
+
+            spawnedContentObjects.Clear();
+        }
+
+        private Color GetUnitColor(UnitRuntimeModel unit)
+        {
+            return unit.TeamType == TeamType.Player
+                ? playFieldConfig.PlayerCellColor
+                : playFieldConfig.EnemyCellColor;
+        }
+
         private Vector3 GetCellLocalPosition(int x, int y, int columns, int rows)
         {
             var centerOffsetX = (columns - 1) * 0.5f;
@@ -157,16 +224,21 @@ namespace TetrisTactic.PlayField
                 0f);
         }
 
-        private void EnsureRoot()
+        private void EnsureRoots()
         {
-            if (cellRoot != null)
+            if (cellRoot == null)
             {
-                return;
+                var cellRootObject = new GameObject("CellRoot");
+                cellRoot = cellRootObject.transform;
+                cellRoot.SetParent(transform, false);
             }
 
-            var rootObject = new GameObject("CellRoot");
-            cellRoot = rootObject.transform;
-            cellRoot.SetParent(transform, false);
+            if (contentRoot == null)
+            {
+                var contentRootObject = new GameObject("ContentRoot");
+                contentRoot = contentRootObject.transform;
+                contentRoot.SetParent(transform, false);
+            }
         }
 
         private void OnCellClicked(GridPosition position)

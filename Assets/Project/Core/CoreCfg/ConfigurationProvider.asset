@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   configurations:
   - {fileID: 11400000, guid: f084d98f931844a9a91f6c8a6a6cbf30, type: 2}
+  - {fileID: 11400000, guid: 3b0ad8e8d4ca43efa0e24ae5018ea163, type: 2}
+  - {fileID: 11400000, guid: 4af60b185bb64b95b727d26af4a04d02, type: 2}
