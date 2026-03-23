@@ -137,7 +137,7 @@ TextureImporter:
         width: 339
         height: 302
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -150,33 +150,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: archer_ability_1
-      rect:
-        serializedVersion: 2
-        x: 107
-        y: 64
-        width: 287
-        height: 48
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 1f7ac18a4a7a0ed00800000000000000
-      internalID: 999983442913175537
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 0f5dc6e2740795848ae9d6827ac754e0
     internalID: 0
     vertices: []
     indices: 

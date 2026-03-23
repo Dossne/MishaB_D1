@@ -6,6 +6,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 #endif
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace TetrisTactic.MainUi
 {
@@ -20,6 +23,9 @@ namespace TetrisTactic.MainUi
         [SerializeField] private ResourceCounter resourceCounter;
 
         private RectTransform canvasRoot;
+        private Sprite resourceIconSprite;
+        private Sprite damageIconSprite;
+        private Sprite healthIconSprite;
 
         public RectTransform FloatingTextParent => floatingTextParent;
         public RectTransform HudParent => hudParent;
@@ -33,6 +39,7 @@ namespace TetrisTactic.MainUi
             EnsureEventSystem();
             EnsureCanvas();
             EnsureMainParents();
+            EnsureUiSpritesLoaded();
             EnsureResourceCounter();
             EnsureProgressionPopup();
             EnsureFinishPopup();
@@ -124,6 +131,13 @@ namespace TetrisTactic.MainUi
             StretchToParent(popupParent);
         }
 
+        private void EnsureUiSpritesLoaded()
+        {
+            resourceIconSprite ??= LoadSprite("Project/Resource/ResourceArt/resource", "Assets/Project/Resource/ResourceArt/resource.png");
+            damageIconSprite ??= LoadSprite("Project/Abilities/AbilitiesArt/damage", "Assets/Project/Abilities/AbilitiesArt/damage.png");
+            healthIconSprite ??= LoadSprite("Project/Abilities/AbilitiesArt/health", "Assets/Project/Abilities/AbilitiesArt/health.png");
+        }
+
         private void EnsureResourceCounter()
         {
             if (resourceCounter != null)
@@ -138,16 +152,18 @@ namespace TetrisTactic.MainUi
             counterRect.anchorMax = new Vector2(0f, 1f);
             counterRect.pivot = new Vector2(0f, 1f);
             counterRect.anchoredPosition = new Vector2(40f, -30f);
-            counterRect.sizeDelta = new Vector2(280f, 90f);
+            counterRect.sizeDelta = new Vector2(320f, 90f);
 
             var background = counterObject.GetComponent<Image>();
             background.color = new Color(0.12f, 0.12f, 0.16f, 0.85f);
+
+            AddInlineIcon(counterRect, "ResourceIcon", resourceIconSprite, 46f, new Vector2(22f, 0f));
 
             var labelText = CreateLabel("AmountText", counterRect, "Resource: 0", 36, TextAnchor.MiddleLeft);
             var labelRect = labelText.rectTransform;
             labelRect.anchorMin = new Vector2(0f, 0f);
             labelRect.anchorMax = new Vector2(1f, 1f);
-            labelRect.offsetMin = new Vector2(20f, 0f);
+            labelRect.offsetMin = new Vector2(78f, 0f);
             labelRect.offsetMax = new Vector2(-20f, 0f);
 
             resourceCounter = counterObject.GetComponent<ResourceCounter>();
@@ -176,11 +192,17 @@ namespace TetrisTactic.MainUi
             topPlateRect.anchorMax = new Vector2(0f, 1f);
             topPlateRect.pivot = new Vector2(0f, 1f);
             topPlateRect.anchoredPosition = new Vector2(30f, -25f);
-            topPlateRect.sizeDelta = new Vector2(300f, 80f);
+            topPlateRect.sizeDelta = new Vector2(320f, 80f);
             topPlate.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.28f, 0.95f);
 
-            var plateLabel = CreateLabel("PlateLabel", topPlateRect, "Resource: 0", 26, TextAnchor.MiddleCenter);
-            StretchToParent(plateLabel.rectTransform);
+            AddInlineIcon(topPlateRect, "ResourceIcon", resourceIconSprite, 36f, new Vector2(18f, 0f));
+
+            var plateLabel = CreateLabel("PlateLabel", topPlateRect, "Resource: 0", 26, TextAnchor.MiddleLeft);
+            var plateRect = plateLabel.rectTransform;
+            plateRect.anchorMin = new Vector2(0f, 0f);
+            plateRect.anchorMax = new Vector2(1f, 1f);
+            plateRect.offsetMin = new Vector2(62f, 0f);
+            plateRect.offsetMax = new Vector2(-16f, 0f);
 
             var popupCounter = topPlate.GetComponent<ResourceCounter>();
             popupCounter.BindAmountText(plateLabel);
@@ -195,9 +217,11 @@ namespace TetrisTactic.MainUi
 
             var damageUpgrade = CreateUpgradeButton(popupRect, "UpgradeDamageButton", "+1 Ability Damage", new Vector2(0f, 120f));
             var damagePrice = CreatePriceLabel(damageUpgrade.transform as RectTransform, "DamagePriceLabel", "Price: 1");
+            AddButtonIcon(damageUpgrade.transform as RectTransform, damageIconSprite, "DamageIcon");
 
             var healthUpgrade = CreateUpgradeButton(popupRect, "UpgradeHealthButton", "+1 Player HP", new Vector2(0f, -20f));
             var healthPrice = CreatePriceLabel(healthUpgrade.transform as RectTransform, "HealthPriceLabel", "Price: 1");
+            AddButtonIcon(healthUpgrade.transform as RectTransform, healthIconSprite, "HealthIcon");
 
             var startLevelButton = CreatePrimaryButton(popupRect, "StartLevelButton", "Start Level", new Vector2(0f, -250f), new Vector2(480f, 120f));
 
@@ -256,7 +280,8 @@ namespace TetrisTactic.MainUi
             resourceIconRect.sizeDelta = new Vector2(64f, 64f);
 
             var resourceIconImage = resourceIconObject.GetComponent<Image>();
-            resourceIconImage.color = new Color(0.97f, 0.78f, 0.17f, 1f);
+            resourceIconImage.sprite = resourceIconSprite;
+            resourceIconImage.color = resourceIconSprite != null ? Color.white : new Color(0.97f, 0.78f, 0.17f, 1f);
 
             var resourceAmountText = CreateLabel("ResourceAmountText", rewardRowRect, "+0", 48, TextAnchor.MiddleLeft);
             var resourceAmountRect = resourceAmountText.rectTransform;
@@ -384,6 +409,61 @@ namespace TetrisTactic.MainUi
             rectTransform.SetParent(parent, false);
 
             return text;
+        }
+
+        private static void AddInlineIcon(RectTransform parent, string iconName, Sprite iconSprite, float size, Vector2 anchoredPosition)
+        {
+            var iconObject = new GameObject(iconName, typeof(RectTransform), typeof(Image));
+            var iconRect = iconObject.GetComponent<RectTransform>();
+            iconRect.SetParent(parent, false);
+            iconRect.anchorMin = new Vector2(0f, 0.5f);
+            iconRect.anchorMax = new Vector2(0f, 0.5f);
+            iconRect.pivot = new Vector2(0f, 0.5f);
+            iconRect.anchoredPosition = anchoredPosition;
+            iconRect.sizeDelta = new Vector2(size, size);
+
+            var iconImage = iconObject.GetComponent<Image>();
+            iconImage.sprite = iconSprite;
+            iconImage.color = iconSprite != null ? Color.white : new Color(0.97f, 0.78f, 0.17f, 1f);
+        }
+
+        private static void AddButtonIcon(RectTransform buttonRect, Sprite iconSprite, string iconName)
+        {
+            if (buttonRect == null)
+            {
+                return;
+            }
+
+            AddInlineIcon(buttonRect, iconName, iconSprite, 40f, new Vector2(24f, 0f));
+
+            var labelTransform = buttonRect.Find("Label");
+            if (labelTransform == null)
+            {
+                return;
+            }
+
+            var labelRect = labelTransform.GetComponent<RectTransform>();
+            if (labelRect == null)
+            {
+                return;
+            }
+
+            labelRect.offsetMin = new Vector2(72f, 0f);
+            labelRect.offsetMax = new Vector2(-16f, 0f);
+        }
+
+        private static Sprite LoadSprite(string resourcesPath, string editorAssetPath)
+        {
+            var sprite = Resources.Load<Sprite>(resourcesPath);
+
+#if UNITY_EDITOR
+            if (sprite == null)
+            {
+                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(editorAssetPath);
+            }
+#endif
+
+            return sprite;
         }
 
         private static Font LoadBuiltinFont()

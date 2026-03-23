@@ -138,34 +138,12 @@ TextureImporter:
       name: mage_ability_0
       rect:
         serializedVersion: 2
-        x: 176
-        y: 503
-        width: 146
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c9f58197d9500e3f0800000000000000
-      internalID: -873692153810231396
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: mage_ability_1
-      rect:
-        serializedVersion: 2
         x: 84
         y: 95
         width: 329
         height: 330
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -178,55 +156,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: mage_ability_2
-      rect:
-        serializedVersion: 2
-        x: 136
-        y: 54
-        width: 243
-        height: 42
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bbd2b022a59f38650800000000000000
-      internalID: 6234100474724429243
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: mage_ability_3
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 74
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3460c85dadad64d40800000000000000
-      internalID: 5568378622710646339
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 6aeb8671a3d3a534da37b565e6765fa3
     internalID: 0
     vertices: []
     indices: 
@@ -236,8 +170,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      mage_ability_0: -873692153810231396
-      mage_ability_1: -6981430131747417010
+      mage_ability_0: -6981430131747417010
       mage_ability_2: 6234100474724429243
       mage_ability_3: 5568378622710646339
   mipmapLimitGroupName: 

@@ -156,13 +156,9 @@ namespace TetrisTactic.EnemyTurn
 
         private bool IsThreatCellRelevantForPlayer(GridPosition cell, UnitRuntimeModel player)
         {
-            if (player == null)
-            {
-                return playFieldController.IsInside(cell);
-            }
-
-            // Highlight only cells that can matter for player positioning.
-            return playFieldController.IsCellPassableForMovement(cell, player);
+            _ = player;
+            // Show full attack coverage for readability, including currently occupied cells.
+            return playFieldController.IsInside(cell);
         }
 
         private HashSet<GridPosition> BuildThreatStandPositions(UnitRuntimeModel enemy, GridPosition targetPosition)
@@ -312,3 +308,5 @@ namespace TetrisTactic.EnemyTurn
         }
     }
 }
+
+
