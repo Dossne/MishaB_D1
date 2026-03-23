@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TetrisTactic.Abilities;
 using TetrisTactic.Core;
 using TetrisTactic.PlayField;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace TetrisTactic.PlayerTurn
     {
         Moved = 0,
         Waited = 1,
+        Attacked = 2,
     }
 
     public sealed class PlayerTurnController : IInitializableController, IDisposableController
@@ -17,6 +19,7 @@ namespace TetrisTactic.PlayerTurn
 
         private readonly ServiceLocator serviceLocator;
         private readonly PlayFieldController playFieldController;
+        private readonly AbilityController abilityController;
 
         private readonly List<GridPosition> legalMoveCache = new(4);
 
@@ -25,11 +28,13 @@ namespace TetrisTactic.PlayerTurn
 
         private bool isTurnActive;
         private bool usedWaitOnPreviousTurn;
+        private bool isResolvingAbility;
 
-        public PlayerTurnController(ServiceLocator serviceLocator, PlayFieldController playFieldController)
+        public PlayerTurnController(ServiceLocator serviceLocator, PlayFieldController playFieldController, AbilityController abilityController)
         {
             this.serviceLocator = serviceLocator;
             this.playFieldController = playFieldController;
+            this.abilityController = abilityController;
         }
 
         public void Initialize()
@@ -39,6 +44,10 @@ namespace TetrisTactic.PlayerTurn
 
             playFieldController.CellTapped -= OnCellTapped;
             playFieldController.CellTapped += OnCellTapped;
+
+            abilityController.BindActionPanel(actionPanel);
+            abilityController.SelectionChanged -= OnAbilitySelectionChanged;
+            abilityController.SelectionChanged += OnAbilitySelectionChanged;
 
             if (actionPanel?.WaitButtonView != null)
             {
@@ -50,6 +59,7 @@ namespace TetrisTactic.PlayerTurn
         public void Dispose()
         {
             playFieldController.CellTapped -= OnCellTapped;
+            abilityController.SelectionChanged -= OnAbilitySelectionChanged;
 
             if (actionPanel?.WaitButtonView != null)
             {
@@ -65,6 +75,8 @@ namespace TetrisTactic.PlayerTurn
             }
 
             isTurnActive = true;
+            isResolvingAbility = false;
+            abilityController.BeginTurn(playFieldController.GetPlayerUnit());
             RefreshTurnPresentation();
         }
 
@@ -96,23 +108,38 @@ namespace TetrisTactic.PlayerTurn
                 legalMoveCache.Add(moves[i]);
             }
 
-            moveHighlighter.HighlightLegalMoves();
+            if (abilityController.HasSelectedAbility)
+            {
+                moveHighlighter.Clear();
+            }
+            else
+            {
+                moveHighlighter.HighlightLegalMoves();
+            }
 
             if (actionPanel != null)
             {
                 actionPanel.Show();
-                actionPanel.SetWaitInteractable(!usedWaitOnPreviousTurn);
+                actionPanel.SetWaitInteractable(!usedWaitOnPreviousTurn && !isResolvingAbility);
             }
         }
 
         private void OnCellTapped(GridPosition tappedCell)
         {
-            if (!isTurnActive)
+            if (!isTurnActive || isResolvingAbility)
             {
                 return;
             }
 
-            // Stage 6: no ability selection yet, so taps only attempt movement.
+            if (abilityController.HasSelectedAbility)
+            {
+                var handledAbilityTap = abilityController.TryHandleCellTap(tappedCell, OnAbilityCastStarted, OnAbilityCastCompleted);
+                if (handledAbilityTap)
+                {
+                    return;
+                }
+            }
+
             if (!IsLegalMoveCell(tappedCell))
             {
                 return;
@@ -129,13 +156,36 @@ namespace TetrisTactic.PlayerTurn
 
         private void OnWaitPressed()
         {
-            if (!isTurnActive || usedWaitOnPreviousTurn)
+            if (!isTurnActive || usedWaitOnPreviousTurn || isResolvingAbility)
             {
                 return;
             }
 
             usedWaitOnPreviousTurn = true;
             EndTurn(PlayerTurnActionType.Waited);
+        }
+
+        private void OnAbilityCastStarted()
+        {
+            isResolvingAbility = true;
+            RefreshTurnPresentation();
+        }
+
+        private void OnAbilityCastCompleted()
+        {
+            isResolvingAbility = false;
+            usedWaitOnPreviousTurn = false;
+            EndTurn(PlayerTurnActionType.Attacked);
+        }
+
+        private void OnAbilitySelectionChanged()
+        {
+            if (!isTurnActive || isResolvingAbility)
+            {
+                return;
+            }
+
+            RefreshTurnPresentation();
         }
 
         private bool IsLegalMoveCell(GridPosition position)
@@ -154,7 +204,10 @@ namespace TetrisTactic.PlayerTurn
         private void EndTurn(PlayerTurnActionType actionType)
         {
             isTurnActive = false;
+            isResolvingAbility = false;
             moveHighlighter.Clear();
+            playFieldController.ClearAbilityHighlights();
+            abilityController.ClearSelection();
 
             if (actionPanel != null)
             {

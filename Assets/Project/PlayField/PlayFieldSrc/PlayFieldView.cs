@@ -17,13 +17,15 @@ namespace TetrisTactic.PlayField
 
         private readonly Dictionary<GridPosition, CellView> cellViews = new();
         private readonly List<GameObject> spawnedContentObjects = new();
-        private readonly HashSet<GridPosition> highlightedCells = new();
+        private readonly HashSet<GridPosition> moveHighlightedCells = new();
+        private readonly HashSet<GridPosition> abilityHighlightedCells = new();
 
         private PlayFieldConfig playFieldConfig;
         private Sprite defaultCellSprite;
         private int currentColumns;
         private int currentRows;
         private Color moveHighlightColor = new(0.4f, 0.7f, 1f, 1f);
+        private Color abilityHighlightColor = new(0.95f, 0.53f, 0.25f, 1f);
 
         private void Update()
         {
@@ -115,7 +117,8 @@ namespace TetrisTactic.PlayField
             }
 
             cellViews.Clear();
-            highlightedCells.Clear();
+            moveHighlightedCells.Clear();
+            abilityHighlightedCells.Clear();
             ClearContent();
             currentColumns = 0;
             currentRows = 0;
@@ -123,7 +126,7 @@ namespace TetrisTactic.PlayField
 
         public void SetMoveHighlights(IReadOnlyList<GridPosition> positions)
         {
-            highlightedCells.Clear();
+            moveHighlightedCells.Clear();
             if (positions == null)
             {
                 ApplyHighlights();
@@ -132,7 +135,7 @@ namespace TetrisTactic.PlayField
 
             for (var i = 0; i < positions.Count; i++)
             {
-                highlightedCells.Add(positions[i]);
+                moveHighlightedCells.Add(positions[i]);
             }
 
             ApplyHighlights();
@@ -140,13 +143,53 @@ namespace TetrisTactic.PlayField
 
         public void ClearMoveHighlights()
         {
-            if (highlightedCells.Count == 0)
+            if (moveHighlightedCells.Count == 0)
             {
                 return;
             }
 
-            highlightedCells.Clear();
+            moveHighlightedCells.Clear();
             ApplyHighlights();
+        }
+
+        public void SetAbilityHighlights(IReadOnlyList<GridPosition> positions)
+        {
+            abilityHighlightedCells.Clear();
+            if (positions == null)
+            {
+                ApplyHighlights();
+                return;
+            }
+
+            for (var i = 0; i < positions.Count; i++)
+            {
+                abilityHighlightedCells.Add(positions[i]);
+            }
+
+            ApplyHighlights();
+        }
+
+        public void ClearAbilityHighlights()
+        {
+            if (abilityHighlightedCells.Count == 0)
+            {
+                return;
+            }
+
+            abilityHighlightedCells.Clear();
+            ApplyHighlights();
+        }
+
+        public bool TryGetCellWorldPosition(GridPosition position, out Vector3 worldPosition)
+        {
+            if (!cellViews.TryGetValue(position, out var cellView) || cellView == null)
+            {
+                worldPosition = Vector3.zero;
+                return false;
+            }
+
+            worldPosition = cellView.transform.position;
+            return true;
         }
 
         private void OnDestroy()
@@ -282,8 +325,20 @@ namespace TetrisTactic.PlayField
         {
             foreach (var pair in cellViews)
             {
-                var shouldHighlight = highlightedCells.Contains(pair.Key);
-                pair.Value.SetHighlight(shouldHighlight, moveHighlightColor);
+                var position = pair.Key;
+                if (abilityHighlightedCells.Contains(position))
+                {
+                    pair.Value.SetHighlight(true, abilityHighlightColor);
+                    continue;
+                }
+
+                if (moveHighlightedCells.Contains(position))
+                {
+                    pair.Value.SetHighlight(true, moveHighlightColor);
+                    continue;
+                }
+
+                pair.Value.SetHighlight(false, Color.white);
             }
         }
 

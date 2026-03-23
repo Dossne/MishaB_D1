@@ -73,6 +73,11 @@ namespace TetrisTactic.PlayField
             return unitsByPosition.ContainsKey(position);
         }
 
+        public bool TryGetUnitAt(GridPosition position, out UnitRuntimeModel unit)
+        {
+            return unitsByPosition.TryGetValue(position, out unit);
+        }
+
         public bool HasTreasureAt(GridPosition position)
         {
             return treasuresByPosition.ContainsKey(position);

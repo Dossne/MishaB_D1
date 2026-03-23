@@ -53,6 +53,7 @@ namespace TetrisTactic.PlayField
             if (playFieldView != null)
             {
                 playFieldView.ClearMoveHighlights();
+                playFieldView.ClearAbilityHighlights();
                 playFieldView.Clear();
             }
         }
@@ -133,6 +134,49 @@ namespace TetrisTactic.PlayField
             return playFieldModel.IsInside(destination) && playFieldModel.IsEmpty(destination);
         }
 
+        public bool IsInside(GridPosition position)
+        {
+            return playFieldModel != null && playFieldModel.IsInside(position);
+        }
+
+        public bool TryGetUnitAt(GridPosition position, out UnitRuntimeModel unit)
+        {
+            unit = null;
+            return playFieldModel != null && playFieldModel.TryGetUnitAt(position, out unit);
+        }
+
+        public bool TryApplyDamageAt(GridPosition position, int damage, UnitRuntimeModel sourceUnit)
+        {
+            if (playFieldModel == null || damage <= 0)
+            {
+                return false;
+            }
+
+            if (!playFieldModel.TryGetUnitAt(position, out var targetUnit) || targetUnit == null)
+            {
+                return false;
+            }
+
+            if (sourceUnit != null && targetUnit == sourceUnit)
+            {
+                return false;
+            }
+
+            var damaged = targetUnit.Health.TryApplyDamage(damage);
+            if (damaged)
+            {
+                UpdateView();
+            }
+
+            return damaged;
+        }
+
+        public bool TryGetCellWorldPosition(GridPosition position, out Vector3 worldPosition)
+        {
+            worldPosition = Vector3.zero;
+            return playFieldView != null && playFieldView.TryGetCellWorldPosition(position, out worldPosition);
+        }
+
         public void SetMoveHighlights(IReadOnlyList<GridPosition> positions)
         {
             if (playFieldView == null)
@@ -151,6 +195,26 @@ namespace TetrisTactic.PlayField
             }
 
             playFieldView.ClearMoveHighlights();
+        }
+
+        public void SetAbilityHighlights(IReadOnlyList<GridPosition> positions)
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.SetAbilityHighlights(positions);
+        }
+
+        public void ClearAbilityHighlights()
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.ClearAbilityHighlights();
         }
 
         public void Dispose()

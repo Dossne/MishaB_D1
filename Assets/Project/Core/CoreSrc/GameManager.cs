@@ -1,3 +1,4 @@
+using TetrisTactic.Abilities;
 using TetrisTactic.LevelFlow;
 using TetrisTactic.PlayField;
 using TetrisTactic.PlayerTurn;
@@ -16,6 +17,7 @@ namespace TetrisTactic.Core
 
         private PlayFieldController playFieldController;
         private ResourceController resourceController;
+        private AbilityController abilityController;
         private PlayerTurnController playerTurnController;
         private LevelFlowController levelFlowController;
 
@@ -77,7 +79,10 @@ namespace TetrisTactic.Core
             serviceLocator.RegisterResourceController(resourceController);
             RegisterController(resourceController);
 
-            playerTurnController = new PlayerTurnController(serviceLocator, playFieldController);
+            abilityController = new AbilityController(serviceLocator, playFieldController);
+            RegisterController(abilityController);
+
+            playerTurnController = new PlayerTurnController(serviceLocator, playFieldController, abilityController);
             RegisterController(playerTurnController);
 
             levelFlowController = new LevelFlowController(serviceLocator, playFieldController, resourceController, playerTurnController);
