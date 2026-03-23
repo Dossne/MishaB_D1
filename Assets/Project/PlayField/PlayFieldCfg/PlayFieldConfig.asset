@@ -15,8 +15,11 @@ MonoBehaviour:
   columns: 6
   rows: 8
   cellWorldSize: 1
+  boardWorldOffset: {x: 0, y: 0.9}
   emptyCellColor: {r: 0.2, g: 0.24, b: 0.3, a: 1}
   playerCellColor: {r: 0.22, g: 0.78, b: 0.32, a: 1}
   enemyCellColor: {r: 0.86, g: 0.2, b: 0.2, a: 1}
   treasureCellColor: {r: 1, g: 0.82, b: 0.18, a: 1}
   obstacleCellColor: {r: 0.43, g: 0.45, b: 0.5, a: 1}
+
+

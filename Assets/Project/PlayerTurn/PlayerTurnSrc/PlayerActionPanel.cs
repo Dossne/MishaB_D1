@@ -9,6 +9,13 @@ namespace TetrisTactic.PlayerTurn
 {
     public sealed class PlayerActionPanel : MonoBehaviour
     {
+        private const float PanelHeight = 260f;
+        private const float ButtonWidth = 220f;
+        private const float ButtonHeight = 170f;
+        private const float WaitButtonWidth = 220f;
+        private const float WaitButtonHeight = 170f;
+        private const float SlotSpacing = 16f;
+
         [SerializeField] private WaitButtonView waitButtonView;
         [SerializeField] private RectTransform actionRowRoot;
 
@@ -24,7 +31,7 @@ namespace TetrisTactic.PlayerTurn
             rectTransform.anchorMax = new Vector2(1f, 0f);
             rectTransform.pivot = new Vector2(0.5f, 0f);
             rectTransform.anchoredPosition = Vector2.zero;
-            rectTransform.sizeDelta = new Vector2(0f, 150f);
+            rectTransform.sizeDelta = new Vector2(0f, PanelHeight);
 
             var background = GetComponent<Image>();
             background.color = new Color(0.07f, 0.1f, 0.16f, 0.9f);
@@ -102,8 +109,8 @@ namespace TetrisTactic.PlayerTurn
             root.anchorMin = new Vector2(0.5f, 0.5f);
             root.anchorMax = new Vector2(0.5f, 0.5f);
             root.pivot = new Vector2(0.5f, 0.5f);
-            root.anchoredPosition = Vector2.zero;
-            root.sizeDelta = new Vector2(1000f, 96f);
+            root.anchoredPosition = new Vector2(0f, -2f);
+            root.sizeDelta = new Vector2(1000f, 190f);
             return root;
         }
 
@@ -112,7 +119,7 @@ namespace TetrisTactic.PlayerTurn
             var waitButtonObject = new GameObject("WaitButton", typeof(RectTransform), typeof(Image), typeof(Button), typeof(WaitButtonView));
             var waitButtonRect = waitButtonObject.GetComponent<RectTransform>();
             waitButtonRect.SetParent(rowRoot, false);
-            waitButtonRect.sizeDelta = new Vector2(232f, 84f);
+            waitButtonRect.sizeDelta = new Vector2(WaitButtonWidth, WaitButtonHeight);
             SetSlotAnchors(waitButtonRect, 0);
 
             var buttonImage = waitButtonObject.GetComponent<Image>();
@@ -130,7 +137,7 @@ namespace TetrisTactic.PlayerTurn
             GameTextStyling.SetUiText(waitLabel, "Wait");
             waitLabel.color = Color.white;
             waitLabel.alignment = TextAnchor.MiddleCenter;
-            waitLabel.fontSize = GameTextStyling.ScaleUiFontSize(30);
+            waitLabel.fontSize = GameTextStyling.ScaleUiFontSize(34);
             waitLabel.font = LoadGameFont();
 
             var waitButton = waitButtonObject.GetComponent<Button>();
@@ -144,7 +151,7 @@ namespace TetrisTactic.PlayerTurn
             var buttonObject = new GameObject($"AbilityButton_{index}", typeof(RectTransform), typeof(Image), typeof(Button), typeof(AbilityButtonView));
             var rectTransform = buttonObject.GetComponent<RectTransform>();
             rectTransform.SetParent(rowRoot, false);
-            rectTransform.sizeDelta = new Vector2(232f, 84f);
+            rectTransform.sizeDelta = new Vector2(ButtonWidth, ButtonHeight);
 
             var image = buttonObject.GetComponent<Image>();
             image.color = new Color(0.24f, 0.31f, 0.44f, 1f);
@@ -154,8 +161,8 @@ namespace TetrisTactic.PlayerTurn
             iconRect.SetParent(rectTransform, false);
             iconRect.anchorMin = Vector2.zero;
             iconRect.anchorMax = Vector2.one;
-            iconRect.offsetMin = new Vector2(20f, 12f);
-            iconRect.offsetMax = new Vector2(-20f, -12f);
+            iconRect.offsetMin = new Vector2(8f, 6f);
+            iconRect.offsetMax = new Vector2(-8f, -6f);
 
             var iconImage = iconObject.GetComponent<Image>();
             iconImage.preserveAspect = true;
@@ -200,15 +207,13 @@ namespace TetrisTactic.PlayerTurn
 
         private static void SetSlotAnchors(RectTransform rect, int slotIndex)
         {
-            var slotWidth = 232f;
-            var spacing = 16f;
-            var totalWidth = (slotWidth * 4f) + (spacing * 3f);
-            var startX = -totalWidth * 0.5f + slotWidth * 0.5f;
+            var totalWidth = (ButtonWidth * 4f) + (SlotSpacing * 3f);
+            var startX = -totalWidth * 0.5f + ButtonWidth * 0.5f;
 
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = new Vector2(startX + (slotWidth + spacing) * slotIndex, 0f);
+            rect.anchoredPosition = new Vector2(startX + (ButtonWidth + SlotSpacing) * slotIndex, 0f);
         }
     }
 }

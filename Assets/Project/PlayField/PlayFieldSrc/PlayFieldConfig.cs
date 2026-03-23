@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace TetrisTactic.PlayField
 {
@@ -8,6 +8,7 @@ namespace TetrisTactic.PlayField
         [SerializeField, Min(1)] private int columns = 6;
         [SerializeField, Min(1)] private int rows = 8;
         [SerializeField, Min(0.1f)] private float cellWorldSize = 1f;
+        [SerializeField] private Vector2 boardWorldOffset = new Vector2(0f, 0.9f);
 
         [Header("Cell Colors")]
         [SerializeField] private Color emptyCellColor = new Color(0.2f, 0.24f, 0.3f, 1f);
@@ -19,6 +20,7 @@ namespace TetrisTactic.PlayField
         public int Columns => Mathf.Max(1, columns);
         public int Rows => Mathf.Max(1, rows);
         public float CellWorldSize => Mathf.Max(0.1f, cellWorldSize);
+        public Vector2 BoardWorldOffset => boardWorldOffset;
         public Color EmptyCellColor => emptyCellColor;
         public Color PlayerCellColor => playerCellColor;
         public Color EnemyCellColor => enemyCellColor;
@@ -31,3 +33,5 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
+

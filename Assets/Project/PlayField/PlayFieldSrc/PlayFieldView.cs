@@ -86,6 +86,7 @@ namespace TetrisTactic.PlayField
         {
             playFieldConfig = config;
             EnsureRoots();
+            ApplyBoardOffset();
 
             if (defaultCellSprite == null)
             {
@@ -108,6 +109,7 @@ namespace TetrisTactic.PlayField
             }
 
             EnsureRoots();
+            ApplyBoardOffset();
 
             if (defaultCellSprite == null)
             {
@@ -461,6 +463,16 @@ namespace TetrisTactic.PlayField
                 contentRoot = contentRootObject.transform;
                 contentRoot.SetParent(transform, false);
             }
+        }
+
+        private void ApplyBoardOffset()
+        {
+            if (playFieldConfig == null)
+            {
+                return;
+            }
+
+            transform.position = new Vector3(playFieldConfig.BoardWorldOffset.x, playFieldConfig.BoardWorldOffset.y, transform.position.z);
         }
 
         private void EnsureArtSpritesLoaded()
@@ -834,14 +846,3 @@ namespace TetrisTactic.PlayField
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
