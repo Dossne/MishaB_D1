@@ -1,3 +1,4 @@
+using TetrisTactic.Audio;
 using TetrisTactic.Core;
 using TetrisTactic.EnemyTurn;
 using TetrisTactic.FinishFlow;
@@ -18,6 +19,7 @@ namespace TetrisTactic.LevelFlow
         private readonly PlayFieldController playFieldController;
         private readonly ResourceController resourceController;
         private readonly ProgressionController progressionController;
+        private readonly AudioController audioController;
         private readonly PlayerTurnController playerTurnController;
         private readonly EnemyTurnController enemyTurnController;
 
@@ -28,12 +30,14 @@ namespace TetrisTactic.LevelFlow
         private int pendingReward;
         private int collectedTreasureReward;
         private bool lastBattleWasVictory;
+        private int lastKnownResourceAmount;
 
         public LevelFlowController(
             ServiceLocator serviceLocator,
             PlayFieldController playFieldController,
             ResourceController resourceController,
             ProgressionController progressionController,
+            AudioController audioController,
             PlayerTurnController playerTurnController,
             EnemyTurnController enemyTurnController)
         {
@@ -41,6 +45,7 @@ namespace TetrisTactic.LevelFlow
             this.playFieldController = playFieldController;
             this.resourceController = resourceController;
             this.progressionController = progressionController;
+            this.audioController = audioController;
             this.playerTurnController = playerTurnController;
             this.enemyTurnController = enemyTurnController;
         }
@@ -92,7 +97,11 @@ namespace TetrisTactic.LevelFlow
             playFieldController.TreasureCollected -= OnTreasureCollected;
             playFieldController.TreasureCollected += OnTreasureCollected;
 
-            RefreshResourceCounters(resourceController.GetCurrentAmount());
+            playFieldController.UnitMoved -= OnUnitMoved;
+            playFieldController.UnitMoved += OnUnitMoved;
+
+            lastKnownResourceAmount = resourceController.GetCurrentAmount();
+            RefreshResourceCounters(lastKnownResourceAmount);
 
             finishPopup.Hide();
             progressionPopup.Show(progressionController.CurrentLevel);
@@ -116,6 +125,7 @@ namespace TetrisTactic.LevelFlow
             playerTurnController.TurnEnded -= OnPlayerTurnEnded;
             playFieldController.UnitDied -= OnUnitDied;
             playFieldController.TreasureCollected -= OnTreasureCollected;
+            playFieldController.UnitMoved -= OnUnitMoved;
         }
 
         private void OnStartLevelRequested()
@@ -213,6 +223,7 @@ namespace TetrisTactic.LevelFlow
             }
 
             collectedTreasureReward += resourceAmount;
+            audioController.PlayCoinCue(Vector3.zero);
         }
 
         private bool TryResolveBattleOutcome()
@@ -257,6 +268,7 @@ namespace TetrisTactic.LevelFlow
             playFieldController.ClearField();
 
             finishPopup.Show(isVictory, collectedTreasureReward, victoryBonus);
+            audioController.PlayFinishCue(isVictory);
         }
 
         private void OnFinishContinueRequested()
@@ -279,8 +291,30 @@ namespace TetrisTactic.LevelFlow
 
         private void OnResourceBalanceChanged(int amount)
         {
+            if (amount != lastKnownResourceAmount)
+            {
+                audioController.PlayCoinCue(Vector3.zero);
+                lastKnownResourceAmount = amount;
+            }
+
             RefreshResourceCounters(amount);
             RefreshProgressionPopupState();
+        }
+
+        private void OnUnitMoved(UnitRuntimeModel unit, GridPosition destination)
+        {
+            if (unit == null)
+            {
+                return;
+            }
+
+            if (playFieldController.TryGetCellWorldPosition(destination, out var worldPosition))
+            {
+                audioController.PlayWalkCue(worldPosition);
+                return;
+            }
+
+            audioController.PlayWalkCue(new Vector3(destination.X, destination.Y, 0f));
         }
 
         private void RefreshProgressionPopupState()
@@ -316,6 +350,11 @@ namespace TetrisTactic.LevelFlow
         }
     }
 }
+
+
+
+
+
 
 
 

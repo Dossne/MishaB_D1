@@ -1,4 +1,4 @@
-﻿using TetrisTactic.Abilities;
+using TetrisTactic.Abilities;
 using TetrisTactic.Audio;
 using TetrisTactic.CameraFx;
 using TetrisTactic.EnemyTurn;
@@ -128,6 +128,7 @@ namespace TetrisTactic.Core
                 playFieldController,
                 resourceController,
                 progressionController,
+                audioController,
                 playerTurnController,
                 enemyTurnController);
             RegisterController(levelFlowController);
@@ -152,5 +153,6 @@ namespace TetrisTactic.Core
         }
     }
 }
+
 
 

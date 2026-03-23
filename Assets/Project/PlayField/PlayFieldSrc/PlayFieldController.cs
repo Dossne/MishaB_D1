@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TetrisTactic.Core;
 using TetrisTactic.Progression;
@@ -21,6 +21,7 @@ namespace TetrisTactic.PlayField
         public event Action<GridPosition> CellTapped;
         public event Action<UnitRuntimeModel> UnitDied;
         public event Action<DamageEventData> DamageApplied;
+        public event Action<UnitRuntimeModel, GridPosition> UnitMoved;
         public event Action<int> TreasureCollected;
 
         private readonly ServiceLocator serviceLocator;
@@ -160,6 +161,7 @@ namespace TetrisTactic.PlayField
             }
 
             UpdateView();
+            UnitMoved?.Invoke(playFieldModel.PlayerUnit, destination);
             return true;
         }
 
@@ -201,6 +203,7 @@ namespace TetrisTactic.PlayField
             if (moved)
             {
                 UpdateView();
+                UnitMoved?.Invoke(unit, destination);
             }
 
             return moved;
@@ -665,6 +668,7 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
 
 
 

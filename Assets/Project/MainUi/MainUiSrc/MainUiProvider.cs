@@ -159,7 +159,7 @@ namespace TetrisTactic.MainUi
 
             AddInlineIcon(counterRect, "ResourceIcon", resourceIconSprite, 46f, new Vector2(22f, 0f));
 
-            var labelText = CreateLabel("AmountText", counterRect, "Resource: 0", 36, TextAnchor.MiddleLeft);
+            var labelText = CreateLabel("AmountText", counterRect, "Coins: 0", 36, TextAnchor.MiddleLeft);
             var labelRect = labelText.rectTransform;
             labelRect.anchorMin = new Vector2(0f, 0f);
             labelRect.anchorMax = new Vector2(1f, 1f);
@@ -197,7 +197,7 @@ namespace TetrisTactic.MainUi
 
             AddInlineIcon(topPlateRect, "ResourceIcon", resourceIconSprite, 36f, new Vector2(18f, 0f));
 
-            var plateLabel = CreateLabel("PlateLabel", topPlateRect, "Resource: 0", 26, TextAnchor.MiddleLeft);
+            var plateLabel = CreateLabel("PlateLabel", topPlateRect, "Coins: 0", 26, TextAnchor.MiddleLeft);
             var plateRect = plateLabel.rectTransform;
             plateRect.anchorMin = new Vector2(0f, 0f);
             plateRect.anchorMax = new Vector2(1f, 1f);
@@ -541,6 +541,7 @@ namespace TetrisTactic.MainUi
 
     }
 }
+
 
 
 

@@ -20,8 +20,9 @@ namespace TetrisTactic.MainUi
                 return;
             }
 
-            GameTextStyling.SetUiText(amountText, $"Resource: {amount}");
+            GameTextStyling.SetUiText(amountText, $"Coins: {amount}");
         }
     }
 }
+
 

@@ -12,6 +12,102 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a152f66726a04ce9ba3f24dc85f84f18, type: 3}
   m_Name: AudioConfig
   m_EditorClassIdentifier: 
-  cues: []
+  cues:
+  - cue: 0
+    clip: {fileID: 8300000, guid: a7ae7222c92b8c2408f5f06d1a47474a, type: 3}
+    volume: 0.32
+    pitch: 1
+  - cue: 1
+    clip: {fileID: 8300000, guid: 142ed85b0aee49b4da7b8e81263d7846, type: 3}
+    volume: 0.9
+    pitch: 1
+  - cue: 2
+    clip: {fileID: 8300000, guid: 807b200aab5b19644b4572cfa4ada5cf, type: 3}
+    volume: 0.9
+    pitch: 1
+  - cue: 3
+    clip: {fileID: 8300000, guid: 112cc08ca10eed042b3ffb3fe2c5658a, type: 3}
+    volume: 0.92
+    pitch: 1
+  - cue: 4
+    clip: {fileID: 8300000, guid: acc1203bec694f847bf0abe6e69efbbf, type: 3}
+    volume: 0.92
+    pitch: 1
+  - cue: 5
+    clip: {fileID: 8300000, guid: 2b0ab1723313c644c8649548676b1e87, type: 3}
+    volume: 0.9
+    pitch: 1
+  - cue: 6
+    clip: {fileID: 8300000, guid: ce8cd144f86870c48a25d0e047e24b93, type: 3}
+    volume: 0.9
+    pitch: 1
+  - cue: 7
+    clip: {fileID: 8300000, guid: a5e4d4a28be25c9439248481232833d7, type: 3}
+    volume: 0.9
+    pitch: 1
+  - cue: 8
+    clip: {fileID: 8300000, guid: 65fbdc7e3a191604e88ef217b54d2865, type: 3}
+    volume: 0.9
+    pitch: 1
+  - cue: 9
+    clip: {fileID: 8300000, guid: 37279dca5757dc24e91c5c6b25977f8f, type: 3}
+    volume: 0.86
+    pitch: 1
+  - cue: 10
+    clip: {fileID: 8300000, guid: a606b47b6ca3eae4aab328d03bcce4dd, type: 3}
+    volume: 0.86
+    pitch: 1
+  - cue: 11
+    clip: {fileID: 8300000, guid: 55fec3963f85d0e47809a35170c02485, type: 3}
+    volume: 0.86
+    pitch: 1
+  - cue: 12
+    clip: {fileID: 8300000, guid: 10fa7f85785ce254b891f01aa22c5c70, type: 3}
+    volume: 0.58
+    pitch: 1
+  - cue: 13
+    clip: {fileID: 8300000, guid: b9420410e8f6e3d44b12c413fec19fc6, type: 3}
+    volume: 0.58
+    pitch: 1
+  - cue: 14
+    clip: {fileID: 8300000, guid: 9f2af32d1c16e4141aba31d1fc565a94, type: 3}
+    volume: 0.58
+    pitch: 1
+  - cue: 15
+    clip: {fileID: 8300000, guid: 2b8f97460090e6a44a3eb613d451c8c2, type: 3}
+    volume: 0.58
+    pitch: 1
+  - cue: 16
+    clip: {fileID: 8300000, guid: 28127729bd6bdc14e87af25f2a7dc2a6, type: 3}
+    volume: 0.58
+    pitch: 1
+  - cue: 17
+    clip: {fileID: 8300000, guid: 1acfe5b22acf0aa4fb550adb19cfd7d5, type: 3}
+    volume: 0.95
+    pitch: 1
+  - cue: 18
+    clip: {fileID: 8300000, guid: 1fd83002f04d3af4182f3cec683c8eaa, type: 3}
+    volume: 0.95
+    pitch: 1
+  - cue: 19
+    clip: {fileID: 8300000, guid: 2b0ab1723313c644c8649548676b1e87, type: 3}
+    volume: 0.5
+    pitch: 1
+  - cue: 20
+    clip: {fileID: 8300000, guid: 807b200aab5b19644b4572cfa4ada5cf, type: 3}
+    volume: 0.55
+    pitch: 1
+  - cue: 21
+    clip: {fileID: 8300000, guid: 1fd83002f04d3af4182f3cec683c8eaa, type: 3}
+    volume: 0.62
+    pitch: 1
+  - cue: 22
+    clip: {fileID: 8300000, guid: 10fa7f85785ce254b891f01aa22c5c70, type: 3}
+    volume: 0.35
+    pitch: 1
+  - cue: 23
+    clip: {fileID: 8300000, guid: 142ed85b0aee49b4da7b8e81263d7846, type: 3}
+    volume: 0.9
+    pitch: 1
   masterVolume: 1
   logMissingCueOnce: 1

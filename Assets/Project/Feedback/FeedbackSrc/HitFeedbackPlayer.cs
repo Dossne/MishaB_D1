@@ -50,7 +50,7 @@ namespace TetrisTactic.Feedback
             var worldPosition = ResolveUnitWorldPosition(attacker);
             floatingTextController.ShowCirclePulse(worldPosition, new Color(1f, 0.85f, 0.25f, 0.86f), 0.18f, 0.64f);
             SpawnEmojiBubble(worldPosition + (Vector3.up * 0.35f), "?", new Color(1f, 0.96f, 0.75f, 1f), 0.35f);
-            audioController.PlayCue(AudioCue.AttackCast, worldPosition);
+            audioController.PlayCastCue(attacker.UnitType, worldPosition);
         }
 
         public void PlayWaveCellFeedback(Vector3 worldPosition, bool wasHit)
@@ -87,7 +87,6 @@ namespace TetrisTactic.Feedback
             {
                 SpawnEmojiBubble(worldPosition + (Vector3.up * 0.42f), "??", Color.white, 0.5f);
                 floatingTextController.ShowWorldText(worldPosition + (Vector3.up * 0.55f), "KO", new Color(1f, 0.94f, 0.7f, 1f), 0.6f, 0.35f, 44);
-                audioController.PlayCue(AudioCue.UnitDefeated, worldPosition);
             }
 
             if (damageEvent.TargetUnit != null && damageEvent.TargetUnit.TeamType == TeamType.Player)
@@ -131,3 +130,5 @@ namespace TetrisTactic.Feedback
         }
     }
 }
+
+
