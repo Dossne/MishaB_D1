@@ -17,11 +17,13 @@ namespace TetrisTactic.PlayField
 
         private readonly Dictionary<GridPosition, CellView> cellViews = new();
         private readonly List<GameObject> spawnedContentObjects = new();
+        private readonly HashSet<GridPosition> highlightedCells = new();
 
         private PlayFieldConfig playFieldConfig;
         private Sprite defaultCellSprite;
         private int currentColumns;
         private int currentRows;
+        private Color moveHighlightColor = new(0.4f, 0.7f, 1f, 1f);
 
         private void Update()
         {
@@ -92,11 +94,12 @@ namespace TetrisTactic.PlayField
                     var position = new GridPosition(x, y);
                     if (cellViews.TryGetValue(position, out var view))
                     {
-                        view.SetColor(GetCellColor(model.GetCell(position)));
+                        view.SetBaseColor(GetCellColor(model.GetCell(position)));
                     }
                 }
             }
 
+            ApplyHighlights();
             RenderContent(model);
         }
 
@@ -112,9 +115,38 @@ namespace TetrisTactic.PlayField
             }
 
             cellViews.Clear();
+            highlightedCells.Clear();
             ClearContent();
             currentColumns = 0;
             currentRows = 0;
+        }
+
+        public void SetMoveHighlights(IReadOnlyList<GridPosition> positions)
+        {
+            highlightedCells.Clear();
+            if (positions == null)
+            {
+                ApplyHighlights();
+                return;
+            }
+
+            for (var i = 0; i < positions.Count; i++)
+            {
+                highlightedCells.Add(positions[i]);
+            }
+
+            ApplyHighlights();
+        }
+
+        public void ClearMoveHighlights()
+        {
+            if (highlightedCells.Count == 0)
+            {
+                return;
+            }
+
+            highlightedCells.Clear();
+            ApplyHighlights();
         }
 
         private void OnDestroy()
@@ -244,6 +276,15 @@ namespace TetrisTactic.PlayField
         private void OnCellClicked(GridPosition position)
         {
             CellTapped?.Invoke(position);
+        }
+
+        private void ApplyHighlights()
+        {
+            foreach (var pair in cellViews)
+            {
+                var shouldHighlight = highlightedCells.Contains(pair.Key);
+                pair.Value.SetHighlight(shouldHighlight, moveHighlightColor);
+            }
         }
 
         private Color GetCellColor(CellContentType contentType)

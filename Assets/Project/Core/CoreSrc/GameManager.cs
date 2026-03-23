@@ -1,5 +1,6 @@
-﻿using TetrisTactic.LevelFlow;
+using TetrisTactic.LevelFlow;
 using TetrisTactic.PlayField;
+using TetrisTactic.PlayerTurn;
 using TetrisTactic.Resource;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace TetrisTactic.Core
 
         private PlayFieldController playFieldController;
         private ResourceController resourceController;
+        private PlayerTurnController playerTurnController;
         private LevelFlowController levelFlowController;
 
         private void Awake()
@@ -75,7 +77,10 @@ namespace TetrisTactic.Core
             serviceLocator.RegisterResourceController(resourceController);
             RegisterController(resourceController);
 
-            levelFlowController = new LevelFlowController(serviceLocator, playFieldController, resourceController);
+            playerTurnController = new PlayerTurnController(serviceLocator, playFieldController);
+            RegisterController(playerTurnController);
+
+            levelFlowController = new LevelFlowController(serviceLocator, playFieldController, resourceController, playerTurnController);
             RegisterController(levelFlowController);
         }
 

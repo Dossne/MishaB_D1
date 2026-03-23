@@ -1,7 +1,8 @@
-﻿using TetrisTactic.Core;
+using TetrisTactic.Core;
 using TetrisTactic.FinishFlow;
 using TetrisTactic.MainUi;
 using TetrisTactic.PlayField;
+using TetrisTactic.PlayerTurn;
 using TetrisTactic.Resource;
 using UnityEngine;
 
@@ -9,23 +10,26 @@ namespace TetrisTactic.LevelFlow
 {
     public sealed class LevelFlowController : IInitializableController, IDisposableController
     {
-        private const int StageRewardAmount = 1;
-
         private readonly ServiceLocator serviceLocator;
         private readonly PlayFieldController playFieldController;
         private readonly ResourceController resourceController;
+        private readonly PlayerTurnController playerTurnController;
 
         private ProgressionPopup progressionPopup;
         private FinishPopup finishPopup;
         private ResourceCounter[] resourceCounters;
         private int currentLevel = 1;
-        private int pendingReward;
 
-        public LevelFlowController(ServiceLocator serviceLocator, PlayFieldController playFieldController, ResourceController resourceController)
+        public LevelFlowController(
+            ServiceLocator serviceLocator,
+            PlayFieldController playFieldController,
+            ResourceController resourceController,
+            PlayerTurnController playerTurnController)
         {
             this.serviceLocator = serviceLocator;
             this.playFieldController = playFieldController;
             this.resourceController = resourceController;
+            this.playerTurnController = playerTurnController;
         }
 
         public void Initialize()
@@ -60,11 +64,11 @@ namespace TetrisTactic.LevelFlow
             finishPopup.ContinueRequested -= OnFinishContinueRequested;
             finishPopup.ContinueRequested += OnFinishContinueRequested;
 
-            playFieldController.CellTapped -= OnFieldCellTapped;
-            playFieldController.CellTapped += OnFieldCellTapped;
-
             resourceController.BalanceChanged -= OnResourceBalanceChanged;
             resourceController.BalanceChanged += OnResourceBalanceChanged;
+
+            playerTurnController.TurnEnded -= OnPlayerTurnEnded;
+            playerTurnController.TurnEnded += OnPlayerTurnEnded;
 
             RefreshResourceCounters(resourceController.GetCurrentAmount());
 
@@ -84,8 +88,8 @@ namespace TetrisTactic.LevelFlow
                 finishPopup.ContinueRequested -= OnFinishContinueRequested;
             }
 
-            playFieldController.CellTapped -= OnFieldCellTapped;
             resourceController.BalanceChanged -= OnResourceBalanceChanged;
+            playerTurnController.TurnEnded -= OnPlayerTurnEnded;
         }
 
         private void OnStartLevelRequested()
@@ -93,23 +97,24 @@ namespace TetrisTactic.LevelFlow
             finishPopup.Hide();
             progressionPopup.Hide();
             playFieldController.CreateField();
+            playerTurnController.BeginTurn();
         }
 
-        private void OnFieldCellTapped(GridPosition _)
+        private void OnPlayerTurnEnded(PlayerTurnActionType action)
         {
-            playFieldController.ClearField();
-            pendingReward = StageRewardAmount;
-            finishPopup.Show(isVictory: false, resourceAmount: StageRewardAmount, victoryBonusAmount: 1);
+            if (!playFieldController.HasActiveField)
+            {
+                return;
+            }
+
+            Debug.Log($"Player turn ended with action: {action}");
+
+            // Stage 6 has no enemy turn yet, so we immediately hand control back.
+            playerTurnController.BeginTurn();
         }
 
         private void OnFinishContinueRequested()
         {
-            if (pendingReward > 0)
-            {
-                resourceController.Add(pendingReward);
-                pendingReward = 0;
-            }
-
             finishPopup.Hide();
             progressionPopup.Show(currentLevel);
         }

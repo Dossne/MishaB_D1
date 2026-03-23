@@ -83,6 +83,16 @@ namespace TetrisTactic.PlayField
             return obstacles.Contains(position);
         }
 
+        public bool IsBlocked(GridPosition position)
+        {
+            return !IsInside(position) || IsObstacle(position);
+        }
+
+        public bool IsOccupied(GridPosition position)
+        {
+            return !IsInside(position) || HasUnitAt(position) || HasTreasureAt(position) || IsObstacle(position);
+        }
+
         public bool IsEmpty(GridPosition position)
         {
             if (!IsInside(position))
@@ -157,6 +167,35 @@ namespace TetrisTactic.PlayField
         public bool RemoveObstacle(GridPosition obstaclePosition)
         {
             return obstacles.Remove(obstaclePosition);
+        }
+
+        public bool TryMoveUnit(UnitRuntimeModel unit, GridPosition destination)
+        {
+            if (unit == null || !IsInside(destination))
+            {
+                return false;
+            }
+
+            if (!unitsByPosition.TryGetValue(unit.Position, out var existingUnit) || existingUnit != unit)
+            {
+                return false;
+            }
+
+            if (!IsEmpty(destination))
+            {
+                return false;
+            }
+
+            unitsByPosition.Remove(unit.Position);
+            unit.Position = destination;
+            unitsByPosition[unit.Position] = unit;
+
+            if (unit.TeamType == TeamType.Player)
+            {
+                PlayerUnit = unit;
+            }
+
+            return true;
         }
 
         public IEnumerable<UnitRuntimeModel> GetAllUnits()

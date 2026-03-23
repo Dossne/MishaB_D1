@@ -34,6 +34,8 @@ namespace TetrisTactic.PlayField
             this.serviceLocator = serviceLocator;
         }
 
+        public bool HasActiveField => playFieldModel != null;
+
         public void CreateField()
         {
             EnsureConfigs();
@@ -50,6 +52,7 @@ namespace TetrisTactic.PlayField
 
             if (playFieldView != null)
             {
+                playFieldView.ClearMoveHighlights();
                 playFieldView.Clear();
             }
         }
@@ -62,6 +65,92 @@ namespace TetrisTactic.PlayField
             }
 
             playFieldView.Render(playFieldModel);
+        }
+
+        public UnitRuntimeModel GetPlayerUnit()
+        {
+            return playFieldModel?.PlayerUnit;
+        }
+
+        public IReadOnlyList<GridPosition> GetLegalPlayerMoveCells()
+        {
+            var result = new List<GridPosition>(4);
+            if (playFieldModel == null || playFieldModel.PlayerUnit == null)
+            {
+                return result;
+            }
+
+            var playerPosition = playFieldModel.PlayerUnit.Position;
+
+            for (var i = 0; i < NeighborOffsets.Length; i++)
+            {
+                var offset = NeighborOffsets[i];
+                var target = new GridPosition(playerPosition.X + offset.X, playerPosition.Y + offset.Y);
+                if (CanMovePlayerTo(target))
+                {
+                    result.Add(target);
+                }
+            }
+
+            return result;
+        }
+
+        public bool TryMovePlayerTo(GridPosition destination)
+        {
+            if (playFieldModel == null || playFieldModel.PlayerUnit == null)
+            {
+                return false;
+            }
+
+            if (!CanMovePlayerTo(destination))
+            {
+                return false;
+            }
+
+            var moved = playFieldModel.TryMoveUnit(playFieldModel.PlayerUnit, destination);
+            if (moved)
+            {
+                UpdateView();
+            }
+
+            return moved;
+        }
+
+        public bool CanMovePlayerTo(GridPosition destination)
+        {
+            if (playFieldModel == null || playFieldModel.PlayerUnit == null)
+            {
+                return false;
+            }
+
+            var playerPosition = playFieldModel.PlayerUnit.Position;
+            var distance = Mathf.Abs(playerPosition.X - destination.X) + Mathf.Abs(playerPosition.Y - destination.Y);
+            if (distance != 1)
+            {
+                return false;
+            }
+
+            return playFieldModel.IsInside(destination) && playFieldModel.IsEmpty(destination);
+        }
+
+        public void SetMoveHighlights(IReadOnlyList<GridPosition> positions)
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.SetMoveHighlights(positions);
+        }
+
+        public void ClearMoveHighlights()
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.ClearMoveHighlights();
         }
 
         public void Dispose()
