@@ -1,3 +1,4 @@
+using TetrisTactic.MainUi;
 using UnityEngine;
 
 namespace TetrisTactic.Core
@@ -5,12 +6,14 @@ namespace TetrisTactic.Core
     public sealed class ServiceLocator : MonoBehaviour
     {
         [SerializeField] private ConfigurationProvider configurationProvider;
+        [SerializeField] private MainUiProvider mainUiProvider;
 
         private GameManager gameManager;
         private bool configurationRegistered;
 
         public GameManager GameManager => gameManager;
         public ConfigurationProvider ConfigurationProvider => configurationProvider;
+        public MainUiProvider MainUiProvider => mainUiProvider;
 
         public void RegisterGameManager(GameManager manager)
         {
@@ -31,6 +34,16 @@ namespace TetrisTactic.Core
             }
 
             configurationRegistered = true;
+        }
+
+        public void RegisterMainUiProvider(MainUiProvider provider)
+        {
+            if (provider == null)
+            {
+                return;
+            }
+
+            mainUiProvider = provider;
         }
     }
 }
