@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace TetrisTactic.PlayField
 {
@@ -29,7 +29,7 @@ namespace TetrisTactic.PlayField
 
             spriteRenderer.sprite = sprite;
             spriteRenderer.sortingOrder = 0;
-            transform.localScale = new Vector3(worldSize, worldSize, 1f);
+            transform.localScale = Vector3.one * CalculateScaleToWorldSize(sprite, worldSize);
 
             var collider = GetComponent<BoxCollider2D>();
             if (collider == null)
@@ -67,6 +67,24 @@ namespace TetrisTactic.PlayField
             }
 
             spriteRenderer.color = hasHighlight ? highlightColor : baseColor;
+        }
+
+        private static float CalculateScaleToWorldSize(Sprite sprite, float worldSize)
+        {
+            var targetSize = Mathf.Max(0.01f, worldSize);
+            if (sprite == null)
+            {
+                return targetSize;
+            }
+
+            var bounds = sprite.bounds.size;
+            var maxSize = Mathf.Max(bounds.x, bounds.y);
+            if (maxSize <= 0.0001f)
+            {
+                return targetSize;
+            }
+
+            return targetSize / maxSize;
         }
     }
 }

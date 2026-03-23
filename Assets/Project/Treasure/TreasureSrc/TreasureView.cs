@@ -1,32 +1,56 @@
-using UnityEngine;
+﻿using UnityEngine;
+
 namespace TetrisTactic.Treasure
 {
     public sealed class TreasureView : MonoBehaviour
     {
         [SerializeField] private SpriteRenderer spriteRenderer;
-        private static Sprite cachedSprite;
-        public void Initialize(TreasureData treasureData, float cellWorldSize, Color tint)
+        private static Sprite fallbackSprite;
+
+        public void Initialize(TreasureData treasureData, float cellWorldSize, Color tint, Sprite treasureSprite = null)
         {
             if (spriteRenderer == null)
             {
                 spriteRenderer = GetComponent<SpriteRenderer>();
             }
+
             if (spriteRenderer == null)
             {
                 spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             }
-            if (cachedSprite == null)
+
+            if (fallbackSprite == null)
             {
-                cachedSprite = CreateSprite();
+                fallbackSprite = CreateFallbackSprite();
             }
-            spriteRenderer.sprite = cachedSprite;
+
+            spriteRenderer.sprite = treasureSprite != null ? treasureSprite : fallbackSprite;
             spriteRenderer.color = tint;
             spriteRenderer.sortingOrder = 8;
-            transform.localScale = Vector3.one * (cellWorldSize * 0.42f);
-            transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            transform.localScale = Vector3.one * CalculateScale(spriteRenderer.sprite, cellWorldSize);
+            transform.localRotation = Quaternion.identity;
             name = "Treasure_View";
         }
-        private static Sprite CreateSprite()
+
+        private static float CalculateScale(Sprite sprite, float cellWorldSize)
+        {
+            var targetSize = cellWorldSize * 0.56f;
+            if (sprite == null)
+            {
+                return targetSize;
+            }
+
+            var bounds = sprite.bounds.size;
+            var maxSize = Mathf.Max(bounds.x, bounds.y);
+            if (maxSize <= 0.0001f)
+            {
+                return targetSize;
+            }
+
+            return targetSize / maxSize;
+        }
+
+        private static Sprite CreateFallbackSprite()
         {
             var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
             texture.SetPixel(0, 0, Color.white);
