@@ -3,6 +3,7 @@ using TetrisTactic.EnemyTurn;
 using TetrisTactic.LevelFlow;
 using TetrisTactic.PlayField;
 using TetrisTactic.PlayerTurn;
+using TetrisTactic.Progression;
 using TetrisTactic.Resource;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ namespace TetrisTactic.Core
         private AbilityController abilityController;
         private PlayerTurnController playerTurnController;
         private EnemyTurnController enemyTurnController;
+        private ProgressionController progressionController;
         private LevelFlowController levelFlowController;
 
         private void Awake()
@@ -81,6 +83,9 @@ namespace TetrisTactic.Core
             serviceLocator.RegisterResourceController(resourceController);
             RegisterController(resourceController);
 
+            progressionController = new ProgressionController(serviceLocator, resourceController);
+            RegisterController(progressionController);
+
             abilityController = new AbilityController(serviceLocator, playFieldController);
             RegisterController(abilityController);
 
@@ -94,6 +99,7 @@ namespace TetrisTactic.Core
                 serviceLocator,
                 playFieldController,
                 resourceController,
+                progressionController,
                 playerTurnController,
                 enemyTurnController);
             RegisterController(levelFlowController);
@@ -118,4 +124,3 @@ namespace TetrisTactic.Core
         }
     }
 }
-

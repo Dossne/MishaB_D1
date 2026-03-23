@@ -175,6 +175,12 @@ namespace TetrisTactic.PlayerTurn
                 return;
             }
 
+            var playerUnit = playFieldController.GetPlayerUnit();
+            if (playerUnit != null)
+            {
+                abilityController.TryGainRandomAbilityOnWait(playerUnit);
+            }
+
             usedWaitOnPreviousTurn = true;
             EndTurn(PlayerTurnActionType.Waited);
         }

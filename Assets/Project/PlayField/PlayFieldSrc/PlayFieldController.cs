@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TetrisTactic.Core;
+using TetrisTactic.Progression;
 using TetrisTactic.Treasure;
 using TetrisTactic.Units;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace TetrisTactic.PlayField
 
         public event Action<GridPosition> CellTapped;
         public event Action<UnitRuntimeModel> UnitDied;
+        public event Action<int> TreasureCollected;
 
         private readonly ServiceLocator serviceLocator;
         private readonly System.Random random = new();
@@ -29,6 +31,8 @@ namespace TetrisTactic.PlayField
         private UnitConfig unitConfig;
         private TreasureConfig treasureConfig;
         private UnitFactory unitFactory;
+        private LevelDefinition activeLevelDefinition;
+        private PlayerUpgradeState activePlayerUpgradeState;
 
         public PlayFieldController(ServiceLocator serviceLocator)
         {
@@ -43,8 +47,16 @@ namespace TetrisTactic.PlayField
 
         public void CreateField()
         {
+            CreateField(null, null);
+        }
+
+        public void CreateField(LevelDefinition levelDefinition, PlayerUpgradeState playerUpgradeState)
+        {
             EnsureConfigs();
             EnsureView();
+
+            activeLevelDefinition = levelDefinition;
+            activePlayerUpgradeState = playerUpgradeState;
 
             playFieldModel = new PlayFieldModel(playFieldConfig.Columns, playFieldConfig.Rows);
             GenerateLevelContent(playFieldModel);
@@ -132,12 +144,22 @@ namespace TetrisTactic.PlayField
             }
 
             var moved = playFieldModel.TryMoveUnit(playFieldModel.PlayerUnit, destination);
-            if (moved)
+            if (!moved)
             {
-                UpdateView();
+                return false;
             }
 
-            return moved;
+            if (playFieldModel.TryTakeTreasureAt(destination, out var treasureData) && treasureData != null)
+            {
+                var amount = Mathf.Max(0, treasureData.ResourceAmount);
+                if (amount > 0)
+                {
+                    TreasureCollected?.Invoke(amount);
+                }
+            }
+
+            UpdateView();
+            return true;
         }
 
         public IReadOnlyList<GridPosition> GetLegalUnitMoveCells(UnitRuntimeModel unit)
@@ -197,7 +219,12 @@ namespace TetrisTactic.PlayField
                 return false;
             }
 
-            return playFieldModel.IsInside(destination) && playFieldModel.IsEmpty(destination);
+            if (!playFieldModel.IsInside(destination))
+            {
+                return false;
+            }
+
+            return !playFieldModel.IsObstacle(destination) && !playFieldModel.HasUnitAt(destination);
         }
 
         public bool CanMoveUnitTo(UnitRuntimeModel unit, GridPosition destination)
@@ -428,10 +455,11 @@ namespace TetrisTactic.PlayField
             Shuffle(allPositions);
 
             var playerPosition = allPositions[0];
-            _ = model.TrySetPlayer(unitFactory.CreatePlayer(playerPosition));
+            var playerUpgradeState = activePlayerUpgradeState ?? PlayerUpgradeState.CreateDefault();
+            _ = model.TrySetPlayer(unitFactory.CreatePlayer(playerPosition, playerUpgradeState.DamageBonus, playerUpgradeState.HpBonus));
 
             var maxSpawnSlots = Math.Max(0, allPositions.Count - 1);
-            var enemyCount = unitConfig.GetEnemyCount(random, maxSpawnSlots);
+            var enemyCount = GetEnemyCount(maxSpawnSlots);
             var remainingAfterEnemies = Math.Max(0, maxSpawnSlots - enemyCount);
             var treasureCount = treasureConfig.GetTreasureCount(random, remainingAfterEnemies);
 
@@ -440,8 +468,10 @@ namespace TetrisTactic.PlayField
             for (var i = 0; i < enemyCount && nextIndex < allPositions.Count; i++)
             {
                 var spawnPosition = allPositions[nextIndex++];
-                var enemyType = unitFactory.GetRandomEnemyType(random);
-                _ = model.TryAddEnemy(unitFactory.CreateEnemy(enemyType, spawnPosition));
+                var enemyType = GetEnemyTypeForSpawn();
+                var damageBonus = activeLevelDefinition?.EnemyDamageBonus ?? 0;
+                var hpBonus = activeLevelDefinition?.EnemyHpBonus ?? 0;
+                _ = model.TryAddEnemy(unitFactory.CreateEnemy(enemyType, spawnPosition, damageBonus, hpBonus));
             }
 
             for (var i = 0; i < treasureCount && nextIndex < allPositions.Count; i++)
@@ -471,6 +501,26 @@ namespace TetrisTactic.PlayField
 
                 placedObstacles++;
             }
+        }
+
+        private int GetEnemyCount(int maxSpawnSlots)
+        {
+            if (activeLevelDefinition == null)
+            {
+                return unitConfig.GetEnemyCount(random, maxSpawnSlots);
+            }
+
+            return Mathf.Clamp(activeLevelDefinition.EnemyCount, 0, maxSpawnSlots);
+        }
+
+        private UnitType GetEnemyTypeForSpawn()
+        {
+            if (activeLevelDefinition == null)
+            {
+                return unitFactory.GetRandomEnemyType(random);
+            }
+
+            return activeLevelDefinition.GetRandomEnemyType(random);
         }
 
         private List<GridPosition> BuildObstacleCandidates(PlayFieldModel model, GridPosition playerPosition)

@@ -1,12 +1,13 @@
-﻿using UnityEngine;
+using TetrisTactic.Progression;
+using UnityEngine;
 using UnityEngine.UI;
-using TetrisTactic.Resource;
 
 namespace TetrisTactic.MainUi
 {
     public sealed class ProgressionPopup : MonoBehaviour
     {
         public event System.Action StartLevelRequested;
+        public event System.Action<PlayerUpgradeType> UpgradeRequested;
 
         [SerializeField] private Text levelText;
         [SerializeField] private Button upgradeDamageButton;
@@ -15,17 +16,15 @@ namespace TetrisTactic.MainUi
         [SerializeField] private Text upgradeDamagePriceText;
         [SerializeField] private Text upgradeHealthPriceText;
 
-        private ResourceController resourceController;
-
         private void Awake()
         {
             RefreshPriceLabels("1", "1");
             BindListeners();
         }
 
-        public void Initialize(ResourceController controller)
+        public void Initialize()
         {
-            resourceController = controller;
+            // Reserved for future view setup.
         }
 
         public void Show(int level)
@@ -98,36 +97,12 @@ namespace TetrisTactic.MainUi
 
         private void OnUpgradeDamagePressed()
         {
-            if (resourceController == null)
-            {
-                Debug.LogWarning("ProgressionPopup: ResourceController is not initialized.");
-                return;
-            }
-
-            if (!resourceController.TrySpend(1))
-            {
-                Debug.Log("ProgressionPopup: Not enough resource for damage upgrade.");
-                return;
-            }
-
-            Debug.Log("ProgressionPopup: Damage upgrade purchased for 1 resource.");
+            UpgradeRequested?.Invoke(PlayerUpgradeType.Damage);
         }
 
         private void OnUpgradeHealthPressed()
         {
-            if (resourceController == null)
-            {
-                Debug.LogWarning("ProgressionPopup: ResourceController is not initialized.");
-                return;
-            }
-
-            if (!resourceController.TrySpend(1))
-            {
-                Debug.Log("ProgressionPopup: Not enough resource for health upgrade.");
-                return;
-            }
-
-            Debug.Log("ProgressionPopup: Health upgrade purchased for 1 resource.");
+            UpgradeRequested?.Invoke(PlayerUpgradeType.Health);
         }
 
         private void OnStartLevelPressed()

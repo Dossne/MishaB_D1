@@ -10,6 +10,8 @@ namespace TetrisTactic.PlayField
 {
     public sealed class PlayFieldView : MonoBehaviour
     {
+        private const float BoardFitWidthPaddingWorld = 0.2f;
+
         public event System.Action<GridPosition> CellTapped;
 
         [SerializeField] private Transform cellRoot;
@@ -85,6 +87,8 @@ namespace TetrisTactic.PlayField
             {
                 defaultCellSprite = CreateDefaultSprite();
             }
+
+            EnsureBoardFitsScreenWidth(model.Columns);
 
             if (model.Columns != currentColumns || model.Rows != currentRows)
             {
@@ -221,6 +225,30 @@ namespace TetrisTactic.PlayField
 
             worldPosition = cellView.transform.position;
             return true;
+        }
+
+        private void EnsureBoardFitsScreenWidth(int columns)
+        {
+            if (playFieldConfig == null || columns <= 0)
+            {
+                return;
+            }
+
+            var cameraForFit = Camera.main;
+            if (cameraForFit == null || !cameraForFit.orthographic)
+            {
+                return;
+            }
+
+            var boardWidthWorld = columns * playFieldConfig.CellWorldSize;
+            var requiredHalfWidthWorld = (boardWidthWorld * 0.5f) + BoardFitWidthPaddingWorld;
+            var aspect = Mathf.Max(0.01f, cameraForFit.aspect);
+            var requiredOrthoSizeForWidth = requiredHalfWidthWorld / aspect;
+
+            if (cameraForFit.orthographicSize < requiredOrthoSizeForWidth)
+            {
+                cameraForFit.orthographicSize = requiredOrthoSizeForWidth;
+            }
         }
 
         private void OnDestroy()

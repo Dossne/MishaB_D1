@@ -95,6 +95,20 @@ namespace TetrisTactic.PlayField
             return treasuresByPosition.ContainsKey(position);
         }
 
+        public bool TryTakeTreasureAt(GridPosition position, out TreasureData treasure)
+        {
+            treasure = null;
+            if (!treasuresByPosition.TryGetValue(position, out var existingTreasure) || existingTreasure == null)
+            {
+                return false;
+            }
+
+            treasuresByPosition.Remove(position);
+            treasures.Remove(existingTreasure);
+            treasure = existingTreasure;
+            return true;
+        }
+
         public bool IsObstacle(GridPosition position)
         {
             return obstacles.Contains(position);
@@ -198,7 +212,12 @@ namespace TetrisTactic.PlayField
                 return false;
             }
 
-            if (!IsEmpty(destination))
+            if (IsObstacle(destination) || HasUnitAt(destination))
+            {
+                return false;
+            }
+
+            if (unit.TeamType != TeamType.Player && HasTreasureAt(destination))
             {
                 return false;
             }

@@ -10,6 +10,8 @@ namespace TetrisTactic.Abilities
 {
     public sealed class AbilityController : IInitializableController, IDisposableController
     {
+        private const int MaxAvailableAbilities = 3;
+
         private sealed class CastOption
         {
             public GridPosition BaseCell;
@@ -25,6 +27,7 @@ namespace TetrisTactic.Abilities
         private readonly List<AbilityRuntime> abilities = new();
         private readonly List<GridPosition> previewCells = new();
         private readonly List<CastOption> castOptions = new();
+        private readonly System.Random random = new();
 
         private AbilityConfig abilityConfig;
         private AbilityWavePlayer wavePlayer;
@@ -41,6 +44,7 @@ namespace TetrisTactic.Abilities
 
         public bool HasSelectedAbility => selectedAbilityIndex >= 0 && selectedAbilityIndex < abilities.Count;
         public bool IsResolving => isResolving;
+        public int AvailableAbilityCount => abilities.Count;
 
         public void Initialize()
         {
@@ -159,12 +163,48 @@ namespace TetrisTactic.Abilities
                     }
 
                     EnsureStartingAbilities();
+                    EnforceAbilityBounds();
                     isResolving = false;
                     currentCaster = null;
                     RefreshButtons();
                     onCastCompleted?.Invoke();
                 });
 
+            return true;
+        }
+
+        public bool TryGainRandomAbilityOnWait(UnitRuntimeModel caster)
+        {
+            if (caster == null || abilities.Count > 2 || abilities.Count >= MaxAvailableAbilities)
+            {
+                return false;
+            }
+
+            var shapeTypes = System.Enum.GetValues(typeof(AbilityShapeType));
+            var validPool = new List<AbilityShapeType>(shapeTypes.Length);
+
+            for (var i = 0; i < shapeTypes.Length; i++)
+            {
+                var candidateShape = (AbilityShapeType)shapeTypes.GetValue(i);
+                var candidateDefinition = AbilityDefinition.CreateDefault(candidateShape);
+                if (!HasAnyValidCastWithoutSelfHit(candidateDefinition, caster.Position))
+                {
+                    continue;
+                }
+
+                validPool.Add(candidateShape);
+            }
+
+            if (validPool.Count == 0)
+            {
+                return false;
+            }
+
+            var selectedShape = validPool[random.Next(validPool.Count)];
+            abilities.Add(new AbilityRuntime(AbilityDefinition.CreateDefault(selectedShape)));
+            EnforceAbilityBounds();
+            RefreshButtons();
+            SelectionChanged?.Invoke();
             return true;
         }
 
@@ -210,6 +250,42 @@ namespace TetrisTactic.Abilities
             {
                 abilities.Add(new AbilityRuntime(AbilityDefinition.CreateDefault(AbilityShapeType.O)));
             }
+
+            EnforceAbilityBounds();
+        }
+
+        private void EnforceAbilityBounds()
+        {
+            if (abilities.Count == 0)
+            {
+                abilities.Add(new AbilityRuntime(AbilityDefinition.CreateDefault(AbilityShapeType.O)));
+            }
+
+            while (abilities.Count > MaxAvailableAbilities)
+            {
+                abilities.RemoveAt(abilities.Count - 1);
+            }
+        }
+
+        private bool HasAnyValidCastWithoutSelfHit(AbilityDefinition definition, GridPosition casterPosition)
+        {
+            var baseCells = new[]
+            {
+                new GridPosition(casterPosition.X, casterPosition.Y + 1),
+                new GridPosition(casterPosition.X + 1, casterPosition.Y),
+                new GridPosition(casterPosition.X, casterPosition.Y - 1),
+                new GridPosition(casterPosition.X - 1, casterPosition.Y),
+            };
+
+            for (var i = 0; i < baseCells.Length; i++)
+            {
+                if (AbilityResolver.TryResolveCast(definition, casterPosition, baseCells[i], playFieldController, out _, out _))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void RefreshButtons()

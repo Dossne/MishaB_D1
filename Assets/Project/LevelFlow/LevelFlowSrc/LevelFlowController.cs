@@ -4,6 +4,7 @@ using TetrisTactic.FinishFlow;
 using TetrisTactic.MainUi;
 using TetrisTactic.PlayField;
 using TetrisTactic.PlayerTurn;
+using TetrisTactic.Progression;
 using TetrisTactic.Resource;
 using TetrisTactic.Units;
 using UnityEngine;
@@ -12,32 +13,34 @@ namespace TetrisTactic.LevelFlow
 {
     public sealed class LevelFlowController : IInitializableController, IDisposableController
     {
-        private const int BaseFinishReward = 1;
-        private const int VictoryBonusReward = 1;
-
+        private const int EnemyKillResourceReward = 1;
         private readonly ServiceLocator serviceLocator;
         private readonly PlayFieldController playFieldController;
         private readonly ResourceController resourceController;
+        private readonly ProgressionController progressionController;
         private readonly PlayerTurnController playerTurnController;
         private readonly EnemyTurnController enemyTurnController;
 
         private ProgressionPopup progressionPopup;
         private FinishPopup finishPopup;
         private ResourceCounter[] resourceCounters;
-        private int currentLevel = 1;
         private bool isBattleActive;
         private int pendingReward;
+        private int collectedTreasureReward;
+        private bool lastBattleWasVictory;
 
         public LevelFlowController(
             ServiceLocator serviceLocator,
             PlayFieldController playFieldController,
             ResourceController resourceController,
+            ProgressionController progressionController,
             PlayerTurnController playerTurnController,
             EnemyTurnController enemyTurnController)
         {
             this.serviceLocator = serviceLocator;
             this.playFieldController = playFieldController;
             this.resourceController = resourceController;
+            this.progressionController = progressionController;
             this.playerTurnController = playerTurnController;
             this.enemyTurnController = enemyTurnController;
         }
@@ -66,10 +69,13 @@ namespace TetrisTactic.LevelFlow
             }
 
             resourceCounters = uiProvider.GetResourceCounters();
-            progressionPopup.Initialize(resourceController);
+            progressionPopup.Initialize();
 
             progressionPopup.StartLevelRequested -= OnStartLevelRequested;
             progressionPopup.StartLevelRequested += OnStartLevelRequested;
+
+            progressionPopup.UpgradeRequested -= OnUpgradeRequested;
+            progressionPopup.UpgradeRequested += OnUpgradeRequested;
 
             finishPopup.ContinueRequested -= OnFinishContinueRequested;
             finishPopup.ContinueRequested += OnFinishContinueRequested;
@@ -83,10 +89,13 @@ namespace TetrisTactic.LevelFlow
             playFieldController.UnitDied -= OnUnitDied;
             playFieldController.UnitDied += OnUnitDied;
 
+            playFieldController.TreasureCollected -= OnTreasureCollected;
+            playFieldController.TreasureCollected += OnTreasureCollected;
+
             RefreshResourceCounters(resourceController.GetCurrentAmount());
 
             finishPopup.Hide();
-            progressionPopup.Show(currentLevel);
+            progressionPopup.Show(progressionController.CurrentLevel);
         }
 
         public void Dispose()
@@ -94,6 +103,7 @@ namespace TetrisTactic.LevelFlow
             if (progressionPopup != null)
             {
                 progressionPopup.StartLevelRequested -= OnStartLevelRequested;
+                progressionPopup.UpgradeRequested -= OnUpgradeRequested;
             }
 
             if (finishPopup != null)
@@ -104,16 +114,21 @@ namespace TetrisTactic.LevelFlow
             resourceController.BalanceChanged -= OnResourceBalanceChanged;
             playerTurnController.TurnEnded -= OnPlayerTurnEnded;
             playFieldController.UnitDied -= OnUnitDied;
+            playFieldController.TreasureCollected -= OnTreasureCollected;
         }
 
         private void OnStartLevelRequested()
         {
             pendingReward = 0;
+            collectedTreasureReward = 0;
+            lastBattleWasVictory = false;
             isBattleActive = true;
 
             finishPopup.Hide();
             progressionPopup.Hide();
-            playFieldController.CreateField();
+
+            var levelDefinition = progressionController.BuildCurrentLevelDefinition();
+            playFieldController.CreateField(levelDefinition, progressionController.PlayerUpgradeState);
 
             if (TryResolveBattleOutcome())
             {
@@ -122,6 +137,18 @@ namespace TetrisTactic.LevelFlow
 
             enemyTurnController.RefreshDangerHighlights();
             playerTurnController.BeginTurn();
+        }
+
+        private void OnUpgradeRequested(PlayerUpgradeType upgradeType)
+        {
+            var purchased = progressionController.TryPurchaseUpgrade(upgradeType);
+            if (!purchased)
+            {
+                Debug.Log("ProgressionPopup: Not enough resource for selected upgrade.");
+                return;
+            }
+
+            Debug.Log($"ProgressionPopup: Purchased {upgradeType} upgrade.");
         }
 
         private void OnPlayerTurnEnded(PlayerTurnActionType action)
@@ -163,10 +190,26 @@ namespace TetrisTactic.LevelFlow
                 return;
             }
 
+            if (deadUnit.TeamType == TeamType.Enemy)
+            {
+                resourceController.Add(EnemyKillResourceReward);
+                return;
+            }
+
             if (deadUnit.TeamType == TeamType.Player)
             {
                 HandleBattleCompleted(false);
             }
+        }
+
+        private void OnTreasureCollected(int resourceAmount)
+        {
+            if (!isBattleActive || resourceAmount <= 0)
+            {
+                return;
+            }
+
+            collectedTreasureReward += resourceAmount;
         }
 
         private bool TryResolveBattleOutcome()
@@ -190,6 +233,7 @@ namespace TetrisTactic.LevelFlow
 
             return false;
         }
+
         private void HandleBattleCompleted(bool isVictory)
         {
             if (!isBattleActive)
@@ -198,7 +242,10 @@ namespace TetrisTactic.LevelFlow
             }
 
             isBattleActive = false;
-            pendingReward = BaseFinishReward + (isVictory ? VictoryBonusReward : 0);
+            lastBattleWasVictory = isVictory;
+
+            var victoryBonus = isVictory ? progressionController.GetVictoryBonusResource() : 0;
+            pendingReward = collectedTreasureReward + victoryBonus;
 
             playerTurnController.CancelTurn();
             enemyTurnController.CancelEnemyTurn();
@@ -206,7 +253,7 @@ namespace TetrisTactic.LevelFlow
             playFieldController.ClearEnemyDangerHighlights();
             playFieldController.ClearField();
 
-            finishPopup.Show(isVictory, BaseFinishReward, isVictory ? VictoryBonusReward : 0);
+            finishPopup.Show(isVictory, collectedTreasureReward, victoryBonus);
         }
 
         private void OnFinishContinueRequested()
@@ -216,9 +263,14 @@ namespace TetrisTactic.LevelFlow
                 resourceController.Add(pendingReward);
             }
 
+            progressionController.RegisterBattleResult(lastBattleWasVictory);
+
             pendingReward = 0;
+            collectedTreasureReward = 0;
+            lastBattleWasVictory = false;
+
             finishPopup.Hide();
-            progressionPopup.Show(currentLevel);
+            progressionPopup.Show(progressionController.CurrentLevel);
         }
 
         private void OnResourceBalanceChanged(int amount)
@@ -245,3 +297,5 @@ namespace TetrisTactic.LevelFlow
         }
     }
 }
+
+
