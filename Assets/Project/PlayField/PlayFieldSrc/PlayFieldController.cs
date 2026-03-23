@@ -18,6 +18,7 @@ namespace TetrisTactic.PlayField
         };
 
         public event Action<GridPosition> CellTapped;
+        public event Action<UnitRuntimeModel> UnitDied;
 
         private readonly ServiceLocator serviceLocator;
         private readonly System.Random random = new();
@@ -37,6 +38,8 @@ namespace TetrisTactic.PlayField
         public bool HasActiveField => playFieldModel != null;
         public int Columns => playFieldModel?.Columns ?? 0;
         public int Rows => playFieldModel?.Rows ?? 0;
+        public bool IsPlayerAlive => playFieldModel != null && playFieldModel.PlayerUnit != null && playFieldModel.PlayerUnit.Health.IsAlive;
+        public bool HasLivingEnemies => playFieldModel != null && playFieldModel.EnemyUnits.Count > 0;
 
         public void CreateField()
         {
@@ -263,12 +266,19 @@ namespace TetrisTactic.PlayField
             }
 
             var damaged = targetUnit.Health.TryApplyDamage(damage);
-            if (damaged)
+            if (!damaged)
             {
-                UpdateView();
+                return false;
             }
 
-            return damaged;
+            if (!targetUnit.Health.IsAlive)
+            {
+                _ = playFieldModel.RemoveUnit(targetUnit);
+                UnitDied?.Invoke(targetUnit);
+            }
+
+            UpdateView();
+            return true;
         }
 
         public bool TryGetCellWorldPosition(GridPosition position, out Vector3 worldPosition)

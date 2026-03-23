@@ -5,12 +5,16 @@ using TetrisTactic.MainUi;
 using TetrisTactic.PlayField;
 using TetrisTactic.PlayerTurn;
 using TetrisTactic.Resource;
+using TetrisTactic.Units;
 using UnityEngine;
 
 namespace TetrisTactic.LevelFlow
 {
     public sealed class LevelFlowController : IInitializableController, IDisposableController
     {
+        private const int BaseFinishReward = 1;
+        private const int VictoryBonusReward = 1;
+
         private readonly ServiceLocator serviceLocator;
         private readonly PlayFieldController playFieldController;
         private readonly ResourceController resourceController;
@@ -21,6 +25,8 @@ namespace TetrisTactic.LevelFlow
         private FinishPopup finishPopup;
         private ResourceCounter[] resourceCounters;
         private int currentLevel = 1;
+        private bool isBattleActive;
+        private int pendingReward;
 
         public LevelFlowController(
             ServiceLocator serviceLocator,
@@ -74,6 +80,9 @@ namespace TetrisTactic.LevelFlow
             playerTurnController.TurnEnded -= OnPlayerTurnEnded;
             playerTurnController.TurnEnded += OnPlayerTurnEnded;
 
+            playFieldController.UnitDied -= OnUnitDied;
+            playFieldController.UnitDied += OnUnitDied;
+
             RefreshResourceCounters(resourceController.GetCurrentAmount());
 
             finishPopup.Hide();
@@ -94,20 +103,35 @@ namespace TetrisTactic.LevelFlow
 
             resourceController.BalanceChanged -= OnResourceBalanceChanged;
             playerTurnController.TurnEnded -= OnPlayerTurnEnded;
+            playFieldController.UnitDied -= OnUnitDied;
         }
 
         private void OnStartLevelRequested()
         {
+            pendingReward = 0;
+            isBattleActive = true;
+
             finishPopup.Hide();
             progressionPopup.Hide();
             playFieldController.CreateField();
+
+            if (TryResolveBattleOutcome())
+            {
+                return;
+            }
+
             enemyTurnController.RefreshDangerHighlights();
             playerTurnController.BeginTurn();
         }
 
         private void OnPlayerTurnEnded(PlayerTurnActionType action)
         {
-            if (!playFieldController.HasActiveField)
+            if (!playFieldController.HasActiveField || !isBattleActive)
+            {
+                return;
+            }
+
+            if (TryResolveBattleOutcome())
             {
                 return;
             }
@@ -118,7 +142,12 @@ namespace TetrisTactic.LevelFlow
 
         private void OnEnemyTurnCompleted()
         {
-            if (!playFieldController.HasActiveField)
+            if (!playFieldController.HasActiveField || !isBattleActive)
+            {
+                return;
+            }
+
+            if (TryResolveBattleOutcome())
             {
                 return;
             }
@@ -127,8 +156,67 @@ namespace TetrisTactic.LevelFlow
             playerTurnController.BeginTurn();
         }
 
+        private void OnUnitDied(UnitRuntimeModel deadUnit)
+        {
+            if (!isBattleActive || deadUnit == null)
+            {
+                return;
+            }
+
+            if (deadUnit.TeamType == TeamType.Player)
+            {
+                HandleBattleCompleted(false);
+            }
+        }
+
+        private bool TryResolveBattleOutcome()
+        {
+            if (!isBattleActive || !playFieldController.HasActiveField)
+            {
+                return false;
+            }
+
+            if (!playFieldController.IsPlayerAlive)
+            {
+                HandleBattleCompleted(false);
+                return true;
+            }
+
+            if (!playFieldController.HasLivingEnemies)
+            {
+                HandleBattleCompleted(true);
+                return true;
+            }
+
+            return false;
+        }
+        private void HandleBattleCompleted(bool isVictory)
+        {
+            if (!isBattleActive)
+            {
+                return;
+            }
+
+            isBattleActive = false;
+            pendingReward = BaseFinishReward + (isVictory ? VictoryBonusReward : 0);
+
+            playerTurnController.CancelTurn();
+            enemyTurnController.CancelEnemyTurn();
+
+            playFieldController.ClearEnemyDangerHighlights();
+            playFieldController.ClearField();
+
+            finishPopup.Show(isVictory, BaseFinishReward, isVictory ? VictoryBonusReward : 0);
+        }
+
         private void OnFinishContinueRequested()
         {
+            if (pendingReward > 0)
+            {
+                resourceController.Add(pendingReward);
+            }
+
+            pendingReward = 0;
             finishPopup.Hide();
             progressionPopup.Show(currentLevel);
         }

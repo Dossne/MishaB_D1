@@ -31,10 +31,11 @@ namespace TetrisTactic.Units
             transform.localScale = Vector3.one * (cellWorldSize * 0.68f);
             name = model.UnitType + "_View";
 
-            CreateOrRefreshLabel(model.UnitType, cellWorldSize);
+            CreateOrRefreshUnitLabel(model.UnitType, cellWorldSize);
+            CreateOrRefreshHpLabel(model, cellWorldSize);
         }
 
-        private void CreateOrRefreshLabel(UnitType unitType, float cellWorldSize)
+        private void CreateOrRefreshUnitLabel(UnitType unitType, float cellWorldSize)
         {
             const string labelObjectName = "UnitLabel";
             var labelTransform = transform.Find(labelObjectName);
@@ -67,6 +68,45 @@ namespace TetrisTactic.Units
             if (renderer != null)
             {
                 renderer.sortingOrder = 20;
+            }
+        }
+
+        private void CreateOrRefreshHpLabel(UnitRuntimeModel model, float cellWorldSize)
+        {
+            const string labelObjectName = "HpLabel";
+            var labelTransform = transform.Find(labelObjectName);
+            TextMesh label;
+
+            if (labelTransform == null)
+            {
+                var labelObject = new GameObject(labelObjectName, typeof(TextMesh));
+                labelObject.transform.SetParent(transform, false);
+                labelTransform = labelObject.transform;
+                label = labelObject.GetComponent<TextMesh>();
+            }
+            else
+            {
+                label = labelTransform.GetComponent<TextMesh>();
+                if (label == null)
+                {
+                    label = labelTransform.gameObject.AddComponent<TextMesh>();
+                }
+            }
+
+            var halfUnitSize = cellWorldSize * 0.34f;
+            var cornerInset = cellWorldSize * 0.04f;
+            labelTransform.localPosition = new Vector3(-halfUnitSize + cornerInset, -halfUnitSize + cornerInset, -0.12f);
+            label.text = $"{model.Health.CurrentHp}/{model.Health.MaxHp}";
+            label.anchor = TextAnchor.LowerLeft;
+            label.alignment = TextAlignment.Left;
+            label.characterSize = Mathf.Max(0.03f, cellWorldSize * 0.08f);
+            label.fontSize = 44;
+            label.color = Color.white;
+
+            var renderer = label.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.sortingOrder = 21;
             }
         }
 

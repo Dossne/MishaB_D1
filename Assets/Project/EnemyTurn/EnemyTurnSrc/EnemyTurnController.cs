@@ -46,12 +46,7 @@ namespace TetrisTactic.EnemyTurn
 
         public void Dispose()
         {
-            if (coroutineRunner != null)
-            {
-                coroutineRunner.StopAllCoroutines();
-            }
-
-            isEnemySequenceActive = false;
+            CancelEnemyTurn();
             waitedLastTurn.Clear();
             waitedThisTurn.Clear();
             playFieldController.ClearEnemyDangerHighlights();
@@ -90,6 +85,16 @@ namespace TetrisTactic.EnemyTurn
             var enemies = playFieldController.GetEnemyUnits();
             var dangerCells = enemyAiController.BuildDangerCells(enemies);
             playFieldController.SetEnemyDangerHighlights(dangerCells);
+        }
+
+        public void CancelEnemyTurn()
+        {
+            if (coroutineRunner != null)
+            {
+                coroutineRunner.StopAllCoroutines();
+            }
+
+            isEnemySequenceActive = false;
         }
 
         private IEnumerator ExecuteEnemyTurnRoutine(System.Action onCompleted)

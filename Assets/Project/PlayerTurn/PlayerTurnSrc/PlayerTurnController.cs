@@ -80,6 +80,20 @@ namespace TetrisTactic.PlayerTurn
             RefreshTurnPresentation();
         }
 
+        public void CancelTurn()
+        {
+            isTurnActive = false;
+            isResolvingAbility = false;
+            moveHighlighter?.Clear();
+            playFieldController.ClearAbilityHighlights();
+            abilityController.ClearSelection();
+
+            if (actionPanel != null)
+            {
+                actionPanel.Hide();
+            }
+        }
+
         private void EnsureActionPanel()
         {
             if (actionPanel != null)

@@ -215,6 +215,34 @@ namespace TetrisTactic.PlayField
             return true;
         }
 
+        public bool RemoveUnit(UnitRuntimeModel unit)
+        {
+            if (unit == null)
+            {
+                return false;
+            }
+
+            if (!unitsByPosition.TryGetValue(unit.Position, out var existingUnit) || existingUnit != unit)
+            {
+                return false;
+            }
+
+            unitsByPosition.Remove(unit.Position);
+
+            if (unit.TeamType == TeamType.Player)
+            {
+                if (PlayerUnit == unit)
+                {
+                    PlayerUnit = null;
+                }
+
+                return true;
+            }
+
+            enemies.Remove(unit);
+            return true;
+        }
+
         public IEnumerable<UnitRuntimeModel> GetAllUnits()
         {
             if (IsActiveUnit(PlayerUnit))
