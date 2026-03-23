@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TetrisTactic.PlayField;
 using TetrisTactic.Units;
 
@@ -63,9 +63,9 @@ namespace TetrisTactic.EnemyTurn
             return EnemyDecisionModel.CreateNone(enemy);
         }
 
-        public IReadOnlyList<GridPosition> BuildDangerCells(IReadOnlyList<UnitRuntimeModel> enemies)
+        public IReadOnlyList<ZoneHighlightData> BuildDangerCells(IReadOnlyList<UnitRuntimeModel> enemies)
         {
-            return threatAnalyzer.GetAllDangerCells(enemies);
+            return threatAnalyzer.GetAllDangerZones(enemies);
         }
 
         private GridPosition? TryFindThreateningMove(UnitRuntimeModel enemy, GridPosition playerPosition)
@@ -131,3 +131,5 @@ namespace TetrisTactic.EnemyTurn
         }
     }
 }
+
+

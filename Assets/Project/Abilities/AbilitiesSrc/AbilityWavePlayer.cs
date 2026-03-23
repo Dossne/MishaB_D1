@@ -1,6 +1,7 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TetrisTactic.PlayField;
+using TetrisTactic.Units;
 using UnityEngine;
 
 namespace TetrisTactic.Abilities
@@ -20,15 +21,17 @@ namespace TetrisTactic.Abilities
 
         public void PlayWave(
             IReadOnlyList<List<GridPosition>> waveSteps,
+            UnitType ownerUnitType,
             System.Func<GridPosition, Vector3> worldPositionResolver,
             System.Action<GridPosition> onWaveCellReached,
             System.Action onCompleted)
         {
-            coroutineRunner.StartCoroutine(PlayWaveRoutine(waveSteps, worldPositionResolver, onWaveCellReached, onCompleted));
+            coroutineRunner.StartCoroutine(PlayWaveRoutine(waveSteps, ownerUnitType, worldPositionResolver, onWaveCellReached, onCompleted));
         }
 
         private IEnumerator PlayWaveRoutine(
             IReadOnlyList<List<GridPosition>> waveSteps,
+            UnitType ownerUnitType,
             System.Func<GridPosition, Vector3> worldPositionResolver,
             System.Action<GridPosition> onWaveCellReached,
             System.Action onCompleted)
@@ -46,7 +49,7 @@ namespace TetrisTactic.Abilities
                 {
                     var cell = step[i];
                     onWaveCellReached?.Invoke(cell);
-                    SpawnImpact(worldPositionResolver != null ? worldPositionResolver(cell) : Vector3.zero);
+                    SpawnImpact(ownerUnitType, worldPositionResolver != null ? worldPositionResolver(cell) : Vector3.zero);
                 }
 
                 if (stepIndex < waveSteps.Count - 1)
@@ -59,18 +62,80 @@ namespace TetrisTactic.Abilities
             onCompleted?.Invoke();
         }
 
-        private void SpawnImpact(Vector3 worldPosition)
+        private void SpawnImpact(UnitType ownerUnitType, Vector3 worldPosition)
         {
             var impact = new GameObject("AbilityImpactCell", typeof(SpriteRenderer));
             impact.transform.position = worldPosition;
-            impact.transform.localScale = Vector3.one * 0.62f;
 
             var renderer = impact.GetComponent<SpriteRenderer>();
-            renderer.sprite = AbilityButtonView.GetFallbackSprite();
-            renderer.color = new Color(1f, 0.67f, 0.2f, 0.84f);
+            var icon = AbilityIconResolver.GetAbilityIcon(ownerUnitType);
+            renderer.sprite = icon != null ? icon : AbilityButtonView.GetFallbackSprite();
+            renderer.color = Color.white;
             renderer.sortingOrder = 20;
 
-            Object.Destroy(impact, impactDuration);
+            var scale = CalculateImpactScale(renderer.sprite);
+            impact.transform.localScale = Vector3.one * (scale * 0.65f);
+            coroutineRunner.StartCoroutine(AnimateImpactRoutine(impact.transform, renderer, scale));
+        }
+
+        private IEnumerator AnimateImpactRoutine(Transform impactTransform, SpriteRenderer renderer, float finalScale)
+        {
+            var elapsed = 0f;
+            var duration = impactDuration;
+            var startScale = finalScale * 0.65f;
+            var bounceScale = finalScale * 1.08f;
+            var baseColor = Color.white;
+
+            while (elapsed < duration)
+            {
+                if (impactTransform == null || renderer == null)
+                {
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                var t = Mathf.Clamp01(elapsed / duration);
+
+                if (t < 0.35f)
+                {
+                    var localT = t / 0.35f;
+                    impactTransform.localScale = Vector3.one * Mathf.Lerp(startScale, bounceScale, localT);
+                }
+                else
+                {
+                    var localT = (t - 0.35f) / 0.65f;
+                    impactTransform.localScale = Vector3.one * Mathf.Lerp(bounceScale, finalScale, localT);
+                }
+
+                var color = baseColor;
+                color.a = 1f - t;
+                renderer.color = color;
+
+                yield return null;
+            }
+
+            if (impactTransform != null)
+            {
+                Object.Destroy(impactTransform.gameObject);
+            }
+        }
+
+        private static float CalculateImpactScale(Sprite sprite)
+        {
+            const float targetSize = 0.62f;
+            if (sprite == null)
+            {
+                return targetSize;
+            }
+
+            var bounds = sprite.bounds.size;
+            var maxSize = Mathf.Max(bounds.x, bounds.y);
+            if (maxSize <= 0.0001f)
+            {
+                return targetSize;
+            }
+
+            return targetSize / maxSize;
         }
 
         private static MonoBehaviour CreateRunner()

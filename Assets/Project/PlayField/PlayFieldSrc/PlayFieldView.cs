@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using TetrisTactic.Abilities;
 using TetrisTactic.Treasure;
 using TetrisTactic.Units;
 using UnityEngine;
@@ -11,25 +12,28 @@ namespace TetrisTactic.PlayField
     public sealed class PlayFieldView : MonoBehaviour
     {
         private const float BoardFitWidthPaddingWorld = 0.2f;
+        private const float ZonePreviewAlpha = 0.38f;
+        private const float ZoneFillRatio = 0.76f;
+        private const int ZoneSortingOrder = 7;
 
         public event System.Action<GridPosition> CellTapped;
 
         [SerializeField] private Transform cellRoot;
+        [SerializeField] private Transform zoneRoot;
         [SerializeField] private Transform contentRoot;
 
         private readonly Dictionary<GridPosition, CellView> cellViews = new();
+        private readonly Dictionary<GridPosition, SpriteRenderer> zoneOverlayViews = new();
         private readonly List<GameObject> spawnedContentObjects = new();
         private readonly HashSet<GridPosition> moveHighlightedCells = new();
-        private readonly HashSet<GridPosition> abilityHighlightedCells = new();
-        private readonly HashSet<GridPosition> enemyDangerHighlightedCells = new();
+        private readonly Dictionary<GridPosition, ZoneHighlightData> abilityHighlightedZones = new();
+        private readonly Dictionary<GridPosition, ZoneHighlightData> enemyDangerHighlightedZones = new();
 
         private PlayFieldConfig playFieldConfig;
         private Sprite defaultCellSprite;
         private int currentColumns;
         private int currentRows;
-        private Color moveHighlightColor = new(0.4f, 0.7f, 1f, 1f);
-        private Color abilityHighlightColor = new(0.95f, 0.53f, 0.25f, 1f);
-        private Color enemyDangerHighlightColor = new(0.92f, 0.35f, 0.3f, 0.68f);
+        private readonly Color moveHighlightColor = new(0.4f, 0.7f, 1f, 1f);
 
         private void Update()
         {
@@ -122,10 +126,19 @@ namespace TetrisTactic.PlayField
                 }
             }
 
+            foreach (var overlay in zoneOverlayViews.Values)
+            {
+                if (overlay != null)
+                {
+                    Destroy(overlay.gameObject);
+                }
+            }
+
             cellViews.Clear();
+            zoneOverlayViews.Clear();
             moveHighlightedCells.Clear();
-            abilityHighlightedCells.Clear();
-            enemyDangerHighlightedCells.Clear();
+            abilityHighlightedZones.Clear();
+            enemyDangerHighlightedZones.Clear();
             ClearContent();
             currentColumns = 0;
             currentRows = 0;
@@ -161,16 +174,34 @@ namespace TetrisTactic.PlayField
 
         public void SetAbilityHighlights(IReadOnlyList<GridPosition> positions)
         {
-            abilityHighlightedCells.Clear();
-            if (positions == null)
+            abilityHighlightedZones.Clear();
+            if (positions != null)
             {
-                ApplyHighlights();
-                return;
+                for (var i = 0; i < positions.Count; i++)
+                {
+                    var position = positions[i];
+                    abilityHighlightedZones[position] = new ZoneHighlightData(position, UnitType.Player, -1);
+                }
             }
 
-            for (var i = 0; i < positions.Count; i++)
+            ApplyHighlights();
+        }
+
+        public void SetAbilityHighlights(IReadOnlyList<ZoneHighlightData> zones)
+        {
+            abilityHighlightedZones.Clear();
+            if (zones != null)
             {
-                abilityHighlightedCells.Add(positions[i]);
+                for (var i = 0; i < zones.Count; i++)
+                {
+                    var zone = zones[i];
+                    if (zone == null)
+                    {
+                        continue;
+                    }
+
+                    abilityHighlightedZones[zone.Position] = zone;
+                }
             }
 
             ApplyHighlights();
@@ -178,27 +209,45 @@ namespace TetrisTactic.PlayField
 
         public void ClearAbilityHighlights()
         {
-            if (abilityHighlightedCells.Count == 0)
+            if (abilityHighlightedZones.Count == 0)
             {
                 return;
             }
 
-            abilityHighlightedCells.Clear();
+            abilityHighlightedZones.Clear();
             ApplyHighlights();
         }
 
         public void SetEnemyDangerHighlights(IReadOnlyList<GridPosition> positions)
         {
-            enemyDangerHighlightedCells.Clear();
-            if (positions == null)
+            enemyDangerHighlightedZones.Clear();
+            if (positions != null)
             {
-                ApplyHighlights();
-                return;
+                for (var i = 0; i < positions.Count; i++)
+                {
+                    var position = positions[i];
+                    enemyDangerHighlightedZones[position] = new ZoneHighlightData(position, UnitType.Warrior, 1);
+                }
             }
 
-            for (var i = 0; i < positions.Count; i++)
+            ApplyHighlights();
+        }
+
+        public void SetEnemyDangerHighlights(IReadOnlyList<ZoneHighlightData> zones)
+        {
+            enemyDangerHighlightedZones.Clear();
+            if (zones != null)
             {
-                enemyDangerHighlightedCells.Add(positions[i]);
+                for (var i = 0; i < zones.Count; i++)
+                {
+                    var zone = zones[i];
+                    if (zone == null)
+                    {
+                        continue;
+                    }
+
+                    enemyDangerHighlightedZones[zone.Position] = zone;
+                }
             }
 
             ApplyHighlights();
@@ -206,12 +255,12 @@ namespace TetrisTactic.PlayField
 
         public void ClearEnemyDangerHighlights()
         {
-            if (enemyDangerHighlightedCells.Count == 0)
+            if (enemyDangerHighlightedZones.Count == 0)
             {
                 return;
             }
 
-            enemyDangerHighlightedCells.Clear();
+            enemyDangerHighlightedZones.Clear();
             ApplyHighlights();
         }
 
@@ -367,6 +416,13 @@ namespace TetrisTactic.PlayField
                 cellRoot.SetParent(transform, false);
             }
 
+            if (zoneRoot == null)
+            {
+                var zoneRootObject = new GameObject("ZoneRoot");
+                zoneRoot = zoneRootObject.transform;
+                zoneRoot.SetParent(transform, false);
+            }
+
             if (contentRoot == null)
             {
                 var contentRootObject = new GameObject("ContentRoot");
@@ -385,34 +441,117 @@ namespace TetrisTactic.PlayField
             foreach (var pair in cellViews)
             {
                 var position = pair.Key;
-                if (abilityHighlightedCells.Contains(position))
-                {
-                    pair.Value.SetHighlight(true, abilityHighlightColor);
-                    continue;
-                }
-
                 if (moveHighlightedCells.Contains(position))
                 {
                     pair.Value.SetHighlight(true, moveHighlightColor);
                     continue;
                 }
 
-                if (enemyDangerHighlightedCells.Contains(position))
+                pair.Value.SetHighlight(false, Color.white);
+            }
+
+            ApplyZoneOverlays();
+        }
+
+        private void ApplyZoneOverlays()
+        {
+            var finalZones = new Dictionary<GridPosition, ZoneHighlightData>();
+
+            foreach (var enemyPair in enemyDangerHighlightedZones)
+            {
+                finalZones[enemyPair.Key] = enemyPair.Value;
+            }
+
+            foreach (var abilityPair in abilityHighlightedZones)
+            {
+                if (finalZones.TryGetValue(abilityPair.Key, out var existing))
                 {
-                    pair.Value.SetHighlight(true, enemyDangerHighlightColor);
+                    if (abilityPair.Value.Priority < existing.Priority)
+                    {
+                        finalZones[abilityPair.Key] = abilityPair.Value;
+                    }
+                }
+                else
+                {
+                    finalZones[abilityPair.Key] = abilityPair.Value;
+                }
+            }
+
+            var stalePositions = new List<GridPosition>();
+            foreach (var existing in zoneOverlayViews.Keys)
+            {
+                if (!finalZones.ContainsKey(existing))
+                {
+                    stalePositions.Add(existing);
+                }
+            }
+
+            for (var i = 0; i < stalePositions.Count; i++)
+            {
+                var position = stalePositions[i];
+                if (zoneOverlayViews.TryGetValue(position, out var renderer) && renderer != null)
+                {
+                    Destroy(renderer.gameObject);
+                }
+
+                zoneOverlayViews.Remove(position);
+            }
+
+            foreach (var pair in finalZones)
+            {
+                if (!cellViews.TryGetValue(pair.Key, out var cellView) || cellView == null)
+                {
                     continue;
                 }
 
-                pair.Value.SetHighlight(false, Color.white);
+                if (!zoneOverlayViews.TryGetValue(pair.Key, out var overlay) || overlay == null)
+                {
+                    var overlayObject = new GameObject($"Zone_{pair.Key.X}_{pair.Key.Y}", typeof(SpriteRenderer));
+                    overlayObject.transform.SetParent(zoneRoot, false);
+                    overlay = overlayObject.GetComponent<SpriteRenderer>();
+                    zoneOverlayViews[pair.Key] = overlay;
+                }
+
+                var icon = AbilityIconResolver.GetAbilityIcon(pair.Value.OwnerUnitType);
+                if (icon == null)
+                {
+                    icon = defaultCellSprite;
+                }
+
+                overlay.sprite = icon;
+                overlay.sortingOrder = ZoneSortingOrder;
+                var color = Color.white;
+                color.a = ZonePreviewAlpha;
+                overlay.color = color;
+                overlay.transform.localPosition = cellView.transform.localPosition;
+                overlay.transform.localScale = Vector3.one * CalculateZoneScale(icon);
             }
+        }
+
+        private float CalculateZoneScale(Sprite sprite)
+        {
+            var targetSize = playFieldConfig.CellWorldSize * ZoneFillRatio;
+            if (sprite == null)
+            {
+                return targetSize;
+            }
+
+            var sourceSize = sprite.bounds.size;
+            var sourceMaxSize = Mathf.Max(sourceSize.x, sourceSize.y);
+            if (sourceMaxSize <= 0.0001f)
+            {
+                return targetSize;
+            }
+
+            return targetSize / sourceMaxSize;
         }
 
         private Color GetCellColor(CellContentType contentType)
         {
             return contentType switch
             {
-                CellContentType.Player => playFieldConfig.PlayerCellColor,
-                CellContentType.Enemy => playFieldConfig.EnemyCellColor,
+                CellContentType.Player => playFieldConfig.EmptyCellColor,
+                CellContentType.Enemy => playFieldConfig.EmptyCellColor,
                 CellContentType.Treasure => playFieldConfig.TreasureCellColor,
                 CellContentType.Obstacle => playFieldConfig.ObstacleCellColor,
                 _ => playFieldConfig.EmptyCellColor,

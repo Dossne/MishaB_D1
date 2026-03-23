@@ -1,5 +1,8 @@
-using TetrisTactic.Abilities;
+﻿using TetrisTactic.Abilities;
+using TetrisTactic.Audio;
+using TetrisTactic.CameraFx;
 using TetrisTactic.EnemyTurn;
+using TetrisTactic.Feedback;
 using TetrisTactic.LevelFlow;
 using TetrisTactic.PlayField;
 using TetrisTactic.PlayerTurn;
@@ -19,6 +22,11 @@ namespace TetrisTactic.Core
 
         private PlayFieldController playFieldController;
         private ResourceController resourceController;
+        private AudioController audioController;
+        private CameraShakeController cameraShakeController;
+        private TimeImpactController timeImpactController;
+        private FloatingTextController floatingTextController;
+        private HitFeedbackPlayer hitFeedbackPlayer;
         private AbilityController abilityController;
         private PlayerTurnController playerTurnController;
         private EnemyTurnController enemyTurnController;
@@ -86,13 +94,33 @@ namespace TetrisTactic.Core
             progressionController = new ProgressionController(serviceLocator, resourceController);
             RegisterController(progressionController);
 
-            abilityController = new AbilityController(serviceLocator, playFieldController);
+            audioController = new AudioController(serviceLocator);
+            RegisterController(audioController);
+
+            cameraShakeController = new CameraShakeController();
+            RegisterController(cameraShakeController);
+
+            timeImpactController = new TimeImpactController();
+            RegisterController(timeImpactController);
+
+            floatingTextController = new FloatingTextController();
+            RegisterController(floatingTextController);
+
+            hitFeedbackPlayer = new HitFeedbackPlayer(
+                playFieldController,
+                floatingTextController,
+                audioController,
+                cameraShakeController,
+                timeImpactController);
+            RegisterController(hitFeedbackPlayer);
+
+            abilityController = new AbilityController(serviceLocator, playFieldController, hitFeedbackPlayer);
             RegisterController(abilityController);
 
             playerTurnController = new PlayerTurnController(serviceLocator, playFieldController, abilityController);
             RegisterController(playerTurnController);
 
-            enemyTurnController = new EnemyTurnController(playFieldController, abilityController);
+            enemyTurnController = new EnemyTurnController(playFieldController, abilityController, hitFeedbackPlayer);
             RegisterController(enemyTurnController);
 
             levelFlowController = new LevelFlowController(
@@ -124,3 +152,5 @@ namespace TetrisTactic.Core
         }
     }
 }
+
+

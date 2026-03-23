@@ -1,20 +1,27 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace TetrisTactic.Units
 {
     public sealed class UnitView : MonoBehaviour
     {
-        private const float UnitScaleFactor = 0.68f;
+        private const float UnitFillRatio = 0.82f;
         private const float ReferenceCellSizePixels = 180f;
         private const float CornerInsetPixels = 12f;
 
         [SerializeField] private SpriteRenderer spriteRenderer;
 
-        private static Sprite cachedSprite;
+        private static Sprite fallbackSprite;
+        private static readonly Dictionary<UnitType, Sprite> UnitSpriteCache = new();
         private Transform labelRoot;
 
         public void Initialize(UnitRuntimeModel model, float cellWorldSize, Color tint)
         {
+            _ = tint;
+
             if (spriteRenderer == null)
             {
                 spriteRenderer = GetComponent<SpriteRenderer>();
@@ -25,21 +32,22 @@ namespace TetrisTactic.Units
                 spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             }
 
-            if (cachedSprite == null)
+            var sprite = ResolveUnitSprite(model.UnitType);
+            if (sprite == null)
             {
-                cachedSprite = CreateSprite();
+                fallbackSprite ??= CreateFallbackSprite();
+                sprite = fallbackSprite;
             }
 
-            spriteRenderer.sprite = cachedSprite;
-            spriteRenderer.color = tint;
+            spriteRenderer.sprite = sprite;
+            spriteRenderer.color = Color.white;
             spriteRenderer.sortingOrder = 10;
 
-            var unitScale = Mathf.Max(0.01f, cellWorldSize * UnitScaleFactor);
+            var unitScale = CalculateScaleToFitCell(sprite, cellWorldSize);
             transform.localScale = Vector3.one * unitScale;
             name = model.UnitType + "_View";
 
             EnsureLabelRoot(unitScale);
-            CreateOrRefreshUnitLabel(model.UnitType, cellWorldSize);
             CreateOrRefreshHpLabel(model, cellWorldSize);
             CreateOrRefreshDamageLabel(model, cellWorldSize);
         }
@@ -63,42 +71,6 @@ namespace TetrisTactic.Units
             labelRoot.localScale = new Vector3(inverseScale, inverseScale, 1f);
             labelRoot.localPosition = Vector3.zero;
             labelRoot.localRotation = Quaternion.identity;
-        }
-
-        private void CreateOrRefreshUnitLabel(UnitType unitType, float cellWorldSize)
-        {
-            const string labelObjectName = "UnitLabel";
-            var labelTransform = transform.Find(labelObjectName);
-            TextMesh label;
-
-            if (labelTransform == null)
-            {
-                var labelObject = new GameObject(labelObjectName, typeof(TextMesh));
-                labelObject.transform.SetParent(transform, false);
-                labelObject.transform.localPosition = new Vector3(0f, 0f, -0.1f);
-                label = labelObject.GetComponent<TextMesh>();
-            }
-            else
-            {
-                label = labelTransform.GetComponent<TextMesh>();
-                if (label == null)
-                {
-                    label = labelTransform.gameObject.AddComponent<TextMesh>();
-                }
-            }
-
-            label.text = GetUnitLetter(unitType);
-            label.anchor = TextAnchor.MiddleCenter;
-            label.alignment = TextAlignment.Center;
-            label.characterSize = Mathf.Max(0.05f, cellWorldSize * 0.18f);
-            label.fontSize = 64;
-            label.color = Color.white;
-
-            var renderer = label.GetComponent<MeshRenderer>();
-            if (renderer != null)
-            {
-                renderer.sortingOrder = 20;
-            }
         }
 
         private void CreateOrRefreshHpLabel(UnitRuntimeModel model, float cellWorldSize)
@@ -189,19 +161,62 @@ namespace TetrisTactic.Units
             return new Vector3(-edgeOffset, y, -0.12f);
         }
 
-        private static string GetUnitLetter(UnitType unitType)
+        private static Sprite ResolveUnitSprite(UnitType unitType)
         {
-            return unitType switch
+            if (UnitSpriteCache.TryGetValue(unitType, out var cached) && cached != null)
             {
-                UnitType.Player => "P",
-                UnitType.Warrior => "W",
-                UnitType.Archer => "A",
-                UnitType.Mage => "M",
-                _ => "?",
+                return cached;
+            }
+
+            var fileName = unitType switch
+            {
+                UnitType.Player => "player",
+                UnitType.Warrior => "warrior",
+                UnitType.Archer => "archer",
+                UnitType.Mage => "mage",
+                _ => string.Empty,
             };
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return null;
+            }
+
+            var sprite = Resources.Load<Sprite>($"Project/Units/UnitsArt/{fileName}");
+
+#if UNITY_EDITOR
+            if (sprite == null)
+            {
+                var editorPath = $"Assets/Project/Units/UnitsArt/{fileName}.png";
+                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(editorPath);
+            }
+#endif
+
+            UnitSpriteCache[unitType] = sprite;
+            return sprite;
         }
 
-        private static Sprite CreateSprite()
+        private static float CalculateScaleToFitCell(Sprite sprite, float cellWorldSize)
+        {
+            var safeCellSize = Mathf.Max(0.01f, cellWorldSize);
+            var targetMaxSize = safeCellSize * UnitFillRatio;
+
+            if (sprite == null)
+            {
+                return targetMaxSize;
+            }
+
+            var sourceSize = sprite.bounds.size;
+            var sourceMaxSize = Mathf.Max(sourceSize.x, sourceSize.y);
+            if (sourceMaxSize <= 0.0001f)
+            {
+                return targetMaxSize;
+            }
+
+            return targetMaxSize / sourceMaxSize;
+        }
+
+        private static Sprite CreateFallbackSprite()
         {
             var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
             texture.SetPixel(0, 0, Color.white);

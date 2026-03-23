@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TetrisTactic.PlayField;
 using TetrisTactic.Units;
 using UnityEngine;
@@ -54,16 +54,16 @@ namespace TetrisTactic.EnemyTurn
             return false;
         }
 
-        public IReadOnlyList<GridPosition> GetAllDangerCells(IReadOnlyList<UnitRuntimeModel> enemies)
+        public IReadOnlyList<ZoneHighlightData> GetAllDangerZones(IReadOnlyList<UnitRuntimeModel> enemies)
         {
-            var result = new List<GridPosition>();
-            var unique = new HashSet<GridPosition>();
+            var result = new List<ZoneHighlightData>();
             if (enemies == null)
             {
                 return result;
             }
 
             var player = playFieldController.GetPlayerUnit();
+            var bestByCell = new Dictionary<GridPosition, ZoneHighlightData>();
 
             for (var i = 0; i < enemies.Count; i++)
             {
@@ -73,6 +73,7 @@ namespace TetrisTactic.EnemyTurn
                     continue;
                 }
 
+                var priority = i + 1;
                 for (var directionIndex = 0; directionIndex < DirectionOffsets.Length; directionIndex++)
                 {
                     if (!TryBuildDirectionalAttack(enemy, directionIndex, out var cells, out _))
@@ -88,12 +89,18 @@ namespace TetrisTactic.EnemyTurn
                             continue;
                         }
 
-                        if (unique.Add(cell))
+                        var candidate = new ZoneHighlightData(cell, enemy.UnitType, priority);
+                        if (!bestByCell.TryGetValue(cell, out var existing) || candidate.Priority < existing.Priority)
                         {
-                            result.Add(cell);
+                            bestByCell[cell] = candidate;
                         }
                     }
                 }
+            }
+
+            foreach (var zone in bestByCell.Values)
+            {
+                result.Add(zone);
             }
 
             return result;

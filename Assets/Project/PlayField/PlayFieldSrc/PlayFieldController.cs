@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TetrisTactic.Core;
 using TetrisTactic.Progression;
@@ -20,6 +20,7 @@ namespace TetrisTactic.PlayField
 
         public event Action<GridPosition> CellTapped;
         public event Action<UnitRuntimeModel> UnitDied;
+        public event Action<DamageEventData> DamageApplied;
         public event Action<int> TreasureCollected;
 
         private readonly ServiceLocator serviceLocator;
@@ -298,7 +299,10 @@ namespace TetrisTactic.PlayField
                 return false;
             }
 
-            if (!targetUnit.Health.IsAlive)
+            var wasFatal = !targetUnit.Health.IsAlive;
+            DamageApplied?.Invoke(new DamageEventData(sourceUnit, targetUnit, position, damage, wasFatal));
+
+            if (wasFatal)
             {
                 _ = playFieldModel.RemoveUnit(targetUnit);
                 UnitDied?.Invoke(targetUnit);
@@ -344,6 +348,16 @@ namespace TetrisTactic.PlayField
             playFieldView.SetAbilityHighlights(positions);
         }
 
+        public void SetAbilityHighlights(IReadOnlyList<ZoneHighlightData> zones)
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.SetAbilityHighlights(zones);
+        }
+
         public void ClearAbilityHighlights()
         {
             if (playFieldView == null)
@@ -362,6 +376,16 @@ namespace TetrisTactic.PlayField
             }
 
             playFieldView.SetEnemyDangerHighlights(positions);
+        }
+
+        public void SetEnemyDangerHighlights(IReadOnlyList<ZoneHighlightData> zones)
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.SetEnemyDangerHighlights(zones);
         }
 
         public void ClearEnemyDangerHighlights()
@@ -641,3 +665,6 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
+
+

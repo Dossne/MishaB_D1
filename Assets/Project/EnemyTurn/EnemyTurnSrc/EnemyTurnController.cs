@@ -1,7 +1,8 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TetrisTactic.Abilities;
 using TetrisTactic.Core;
+using TetrisTactic.Feedback;
 using TetrisTactic.PlayField;
 using TetrisTactic.Units;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace TetrisTactic.EnemyTurn
 
         private readonly PlayFieldController playFieldController;
         private readonly AbilityController abilityController;
+        private readonly HitFeedbackPlayer hitFeedbackPlayer;
 
         private readonly HashSet<UnitRuntimeModel> waitedLastTurn = new();
         private readonly HashSet<UnitRuntimeModel> waitedThisTurn = new();
@@ -28,10 +30,12 @@ namespace TetrisTactic.EnemyTurn
 
         public EnemyTurnController(
             PlayFieldController playFieldController,
-            AbilityController abilityController)
+            AbilityController abilityController,
+            HitFeedbackPlayer hitFeedbackPlayer)
         {
             this.playFieldController = playFieldController;
             this.abilityController = abilityController;
+            this.hitFeedbackPlayer = hitFeedbackPlayer;
         }
 
         public void Initialize()
@@ -151,12 +155,18 @@ namespace TetrisTactic.EnemyTurn
                 case EnemyActionType.Attack:
                 {
                     waitedThisTurn.Remove(decision.Enemy);
+                    hitFeedbackPlayer?.PlayAttackFeedback(decision.Enemy);
 
                     var attackFinished = false;
                     enemyWavePlayer.PlayWave(
                         decision.AttackWaveSteps,
+                        decision.Enemy.UnitType,
                         ResolveWorldPosition,
-                        cell => playFieldController.TryApplyDamageAt(cell, decision.Enemy.BaseDamage, decision.Enemy),
+                        cell =>
+                        {
+                            var wasHit = playFieldController.TryApplyDamageAt(cell, decision.Enemy.BaseDamage, decision.Enemy);
+                            hitFeedbackPlayer?.PlayWaveCellFeedback(ResolveWorldPosition(cell), wasHit);
+                        },
                         () => attackFinished = true);
 
                     while (!attackFinished)
@@ -211,3 +221,7 @@ namespace TetrisTactic.EnemyTurn
         }
     }
 }
+
+
+
+

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TetrisTactic.Core;
+using TetrisTactic.Feedback;
 using TetrisTactic.PlayField;
 using TetrisTactic.PlayerTurn;
 using TetrisTactic.Units;
@@ -23,6 +24,7 @@ namespace TetrisTactic.Abilities
 
         private readonly ServiceLocator serviceLocator;
         private readonly PlayFieldController playFieldController;
+        private readonly HitFeedbackPlayer hitFeedbackPlayer;
 
         private readonly List<AbilityRuntime> abilities = new();
         private readonly List<GridPosition> previewCells = new();
@@ -36,10 +38,11 @@ namespace TetrisTactic.Abilities
         private int selectedAbilityIndex = -1;
         private bool isResolving;
 
-        public AbilityController(ServiceLocator serviceLocator, PlayFieldController playFieldController)
+        public AbilityController(ServiceLocator serviceLocator, PlayFieldController playFieldController, HitFeedbackPlayer hitFeedbackPlayer)
         {
             this.serviceLocator = serviceLocator;
             this.playFieldController = playFieldController;
+            this.hitFeedbackPlayer = hitFeedbackPlayer;
         }
 
         public bool HasSelectedAbility => selectedAbilityIndex >= 0 && selectedAbilityIndex < abilities.Count;
@@ -150,11 +153,17 @@ namespace TetrisTactic.Abilities
             RefreshButtons();
             SelectionChanged?.Invoke();
             onCastStarted?.Invoke();
+            hitFeedbackPlayer?.PlayAttackFeedback(currentCaster);
 
             wavePlayer.PlayWave(
                 castOption.WaveSteps,
+                currentCaster.UnitType,
                 ResolveWorldPosition,
-                cell => playFieldController.TryApplyDamageAt(cell, currentCaster.BaseDamage, currentCaster),
+                cell =>
+                {
+                    var wasHit = playFieldController.TryApplyDamageAt(cell, currentCaster.BaseDamage, currentCaster);
+                    hitFeedbackPlayer?.PlayWaveCellFeedback(ResolveWorldPosition(cell), wasHit);
+                },
                 () =>
                 {
                     if (abilities.Count > 1 && consumedAbilityIndex >= 0 && consumedAbilityIndex < abilities.Count)
@@ -408,3 +417,6 @@ namespace TetrisTactic.Abilities
         }
     }
 }
+
+
+
