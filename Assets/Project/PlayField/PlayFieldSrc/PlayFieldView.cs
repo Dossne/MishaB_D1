@@ -20,7 +20,13 @@ namespace TetrisTactic.PlayField
         private const float ZonePulseSpeed = 4.6f;
         private const float ZonePulseScaleFactor = 0.06f;
         private const float ZoneFillRatio = 0.53f;
-        private const int ZoneSortingOrder = 7;
+        private const int ZoneSortingOrder = 12;
+
+        private const int MovePreviewSortingOrder = 9;
+        private const float MovePreviewMinAlpha = 0.62f;
+        private const float MovePreviewMaxAlpha = 0.88f;
+        private const float MovePulseScaleFactor = 0.08f;
+        private const float MovePreviewFillRatio = 0.5f;
 
         public event System.Action<GridPosition> CellTapped;
 
@@ -30,6 +36,7 @@ namespace TetrisTactic.PlayField
 
         private readonly Dictionary<GridPosition, CellView> cellViews = new();
         private readonly Dictionary<GridPosition, SpriteRenderer> zoneOverlayViews = new();
+        private readonly Dictionary<GridPosition, SpriteRenderer> moveOverlayViews = new();
         private readonly Dictionary<GridPosition, float> zoneOverlayBaseScales = new();
         private readonly List<GameObject> spawnedContentObjects = new();
         private readonly HashSet<GridPosition> moveHighlightedCells = new();
@@ -41,9 +48,9 @@ namespace TetrisTactic.PlayField
         private Sprite grassCellSprite;
         private Sprite obstacleCellSprite;
         private Sprite treasureCellSprite;
+        private Sprite movePreviewSprite;
         private int currentColumns;
         private int currentRows;
-        private readonly Color moveHighlightColor = new(0.4f, 0.7f, 1f, 1f);
 
         private void Update()
         {
@@ -52,6 +59,7 @@ namespace TetrisTactic.PlayField
                 return;
             }
 
+            AnimateMoveOverlaysPulse();
             AnimateZoneOverlaysPulse();
 
             if (!TryGetPointerDownWorldPosition(out var worldPosition))
@@ -149,8 +157,17 @@ namespace TetrisTactic.PlayField
                 }
             }
 
+            foreach (var overlay in moveOverlayViews.Values)
+            {
+                if (overlay != null)
+                {
+                    Destroy(overlay.gameObject);
+                }
+            }
+
             cellViews.Clear();
             zoneOverlayViews.Clear();
+            moveOverlayViews.Clear();
             zoneOverlayBaseScales.Clear();
             moveHighlightedCells.Clear();
             abilityHighlightedZones.Clear();
@@ -163,15 +180,12 @@ namespace TetrisTactic.PlayField
         public void SetMoveHighlights(IReadOnlyList<GridPosition> positions)
         {
             moveHighlightedCells.Clear();
-            if (positions == null)
+            if (positions != null)
             {
-                ApplyHighlights();
-                return;
-            }
-
-            for (var i = 0; i < positions.Count; i++)
-            {
-                moveHighlightedCells.Add(positions[i]);
+                for (var i = 0; i < positions.Count; i++)
+                {
+                    moveHighlightedCells.Add(positions[i]);
+                }
             }
 
             ApplyHighlights();
@@ -454,6 +468,7 @@ namespace TetrisTactic.PlayField
             grassCellSprite ??= LoadPlayFieldArtSprite("grass");
             obstacleCellSprite ??= LoadPlayFieldArtSprite("obstacle");
             treasureCellSprite ??= LoadPlayFieldArtSprite("treasure");
+            movePreviewSprite ??= LoadPlayerTurnArtSprite("move");
         }
 
         private static Sprite LoadPlayFieldArtSprite(string fileName)
@@ -469,6 +484,25 @@ namespace TetrisTactic.PlayField
             if (sprite == null)
             {
                 sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Project/PlayField/PlayFieldArt/{fileName}.png");
+            }
+#endif
+
+            return sprite;
+        }
+
+        private static Sprite LoadPlayerTurnArtSprite(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return null;
+            }
+
+            var sprite = Resources.Load<Sprite>($"Project/PlayerTurn/PlayerTurnArt/{fileName}");
+
+#if UNITY_EDITOR
+            if (sprite == null)
+            {
+                sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Project/PlayerTurn/PlayerTurnArt/{fileName}.png");
             }
 #endif
 
@@ -502,17 +536,76 @@ namespace TetrisTactic.PlayField
         {
             foreach (var pair in cellViews)
             {
-                var position = pair.Key;
-                if (moveHighlightedCells.Contains(position))
-                {
-                    pair.Value.SetHighlight(true, moveHighlightColor);
-                    continue;
-                }
-
                 pair.Value.SetHighlight(false, Color.white);
             }
 
+            ApplyMoveOverlays();
             ApplyZoneOverlays();
+        }
+
+        private void ApplyMoveOverlays()
+        {
+            var stalePositions = new List<GridPosition>();
+            foreach (var existing in moveOverlayViews.Keys)
+            {
+                if (!moveHighlightedCells.Contains(existing))
+                {
+                    stalePositions.Add(existing);
+                }
+            }
+
+            for (var i = 0; i < stalePositions.Count; i++)
+            {
+                var position = stalePositions[i];
+                if (moveOverlayViews.TryGetValue(position, out var renderer) && renderer != null)
+                {
+                    Destroy(renderer.gameObject);
+                }
+
+                moveOverlayViews.Remove(position);
+            }
+
+            foreach (var position in moveHighlightedCells)
+            {
+                if (!cellViews.TryGetValue(position, out var cellView) || cellView == null)
+                {
+                    continue;
+                }
+
+                if (!moveOverlayViews.TryGetValue(position, out var overlay) || overlay == null)
+                {
+                    var overlayObject = new GameObject($"Move_{position.X}_{position.Y}", typeof(SpriteRenderer));
+                    overlayObject.transform.SetParent(zoneRoot, false);
+                    overlay = overlayObject.GetComponent<SpriteRenderer>();
+                    moveOverlayViews[position] = overlay;
+                }
+
+                overlay.sprite = movePreviewSprite != null ? movePreviewSprite : defaultCellSprite;
+                overlay.sortingOrder = MovePreviewSortingOrder;
+                var color = Color.white;
+                color.a = MovePreviewMaxAlpha;
+                overlay.color = color;
+                overlay.transform.localPosition = cellView.transform.localPosition;
+                overlay.transform.localScale = Vector3.one * CalculateMovePreviewScale(overlay.sprite);
+            }
+        }
+
+        private float CalculateMovePreviewScale(Sprite sprite)
+        {
+            var targetSize = playFieldConfig.CellWorldSize * MovePreviewFillRatio;
+            if (sprite == null)
+            {
+                return targetSize;
+            }
+
+            var sourceSize = sprite.bounds.size;
+            var sourceMaxSize = Mathf.Max(sourceSize.x, sourceSize.y);
+            if (sourceMaxSize <= 0.0001f)
+            {
+                return targetSize;
+            }
+
+            return targetSize / sourceMaxSize;
         }
 
         private void ApplyZoneOverlays()
@@ -590,6 +683,34 @@ namespace TetrisTactic.PlayField
                 var baseScale = CalculateZoneScale(icon);
                 zoneOverlayBaseScales[pair.Key] = baseScale;
                 overlay.transform.localScale = Vector3.one * baseScale;
+            }
+        }
+        private void AnimateMoveOverlaysPulse()
+        {
+            if (moveOverlayViews.Count == 0)
+            {
+                return;
+            }
+
+            var pulse = (Mathf.Sin(Time.unscaledTime * ZonePulseSpeed) + 1f) * 0.5f;
+            var alpha = Mathf.Lerp(MovePreviewMinAlpha, MovePreviewMaxAlpha, pulse);
+            var scaleMul = Mathf.Lerp(1f - MovePulseScaleFactor, 1f + MovePulseScaleFactor, pulse);
+
+            foreach (var pair in moveOverlayViews)
+            {
+                var renderer = pair.Value;
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+                var color = renderer.color;
+                color.a = alpha;
+                renderer.color = color;
+
+                var sprite = renderer.sprite;
+                var baseScale = CalculateMovePreviewScale(sprite);
+                renderer.transform.localScale = Vector3.one * (baseScale * scaleMul);
             }
         }
         private void AnimateZoneOverlaysPulse()
@@ -713,5 +834,8 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
+
+
 
 
