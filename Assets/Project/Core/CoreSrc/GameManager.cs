@@ -1,4 +1,5 @@
 using TetrisTactic.Abilities;
+using TetrisTactic.EnemyTurn;
 using TetrisTactic.LevelFlow;
 using TetrisTactic.PlayField;
 using TetrisTactic.PlayerTurn;
@@ -19,6 +20,7 @@ namespace TetrisTactic.Core
         private ResourceController resourceController;
         private AbilityController abilityController;
         private PlayerTurnController playerTurnController;
+        private EnemyTurnController enemyTurnController;
         private LevelFlowController levelFlowController;
 
         private void Awake()
@@ -85,7 +87,15 @@ namespace TetrisTactic.Core
             playerTurnController = new PlayerTurnController(serviceLocator, playFieldController, abilityController);
             RegisterController(playerTurnController);
 
-            levelFlowController = new LevelFlowController(serviceLocator, playFieldController, resourceController, playerTurnController);
+            enemyTurnController = new EnemyTurnController(playFieldController, abilityController);
+            RegisterController(enemyTurnController);
+
+            levelFlowController = new LevelFlowController(
+                serviceLocator,
+                playFieldController,
+                resourceController,
+                playerTurnController,
+                enemyTurnController);
             RegisterController(levelFlowController);
         }
 
@@ -108,3 +118,4 @@ namespace TetrisTactic.Core
         }
     }
 }
+

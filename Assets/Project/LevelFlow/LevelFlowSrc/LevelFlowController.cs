@@ -1,4 +1,5 @@
 using TetrisTactic.Core;
+using TetrisTactic.EnemyTurn;
 using TetrisTactic.FinishFlow;
 using TetrisTactic.MainUi;
 using TetrisTactic.PlayField;
@@ -14,6 +15,7 @@ namespace TetrisTactic.LevelFlow
         private readonly PlayFieldController playFieldController;
         private readonly ResourceController resourceController;
         private readonly PlayerTurnController playerTurnController;
+        private readonly EnemyTurnController enemyTurnController;
 
         private ProgressionPopup progressionPopup;
         private FinishPopup finishPopup;
@@ -24,12 +26,14 @@ namespace TetrisTactic.LevelFlow
             ServiceLocator serviceLocator,
             PlayFieldController playFieldController,
             ResourceController resourceController,
-            PlayerTurnController playerTurnController)
+            PlayerTurnController playerTurnController,
+            EnemyTurnController enemyTurnController)
         {
             this.serviceLocator = serviceLocator;
             this.playFieldController = playFieldController;
             this.resourceController = resourceController;
             this.playerTurnController = playerTurnController;
+            this.enemyTurnController = enemyTurnController;
         }
 
         public void Initialize()
@@ -97,6 +101,7 @@ namespace TetrisTactic.LevelFlow
             finishPopup.Hide();
             progressionPopup.Hide();
             playFieldController.CreateField();
+            enemyTurnController.RefreshDangerHighlights();
             playerTurnController.BeginTurn();
         }
 
@@ -108,8 +113,17 @@ namespace TetrisTactic.LevelFlow
             }
 
             Debug.Log($"Player turn ended with action: {action}");
+            enemyTurnController.BeginEnemyTurn(OnEnemyTurnCompleted);
+        }
 
-            // Stage 6 has no enemy turn yet, so we immediately hand control back.
+        private void OnEnemyTurnCompleted()
+        {
+            if (!playFieldController.HasActiveField)
+            {
+                return;
+            }
+
+            enemyTurnController.RefreshDangerHighlights();
             playerTurnController.BeginTurn();
         }
 

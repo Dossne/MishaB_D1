@@ -19,6 +19,7 @@ namespace TetrisTactic.PlayField
         private readonly List<GameObject> spawnedContentObjects = new();
         private readonly HashSet<GridPosition> moveHighlightedCells = new();
         private readonly HashSet<GridPosition> abilityHighlightedCells = new();
+        private readonly HashSet<GridPosition> enemyDangerHighlightedCells = new();
 
         private PlayFieldConfig playFieldConfig;
         private Sprite defaultCellSprite;
@@ -26,6 +27,7 @@ namespace TetrisTactic.PlayField
         private int currentRows;
         private Color moveHighlightColor = new(0.4f, 0.7f, 1f, 1f);
         private Color abilityHighlightColor = new(0.95f, 0.53f, 0.25f, 1f);
+        private Color enemyDangerHighlightColor = new(0.92f, 0.35f, 0.3f, 0.68f);
 
         private void Update()
         {
@@ -119,6 +121,7 @@ namespace TetrisTactic.PlayField
             cellViews.Clear();
             moveHighlightedCells.Clear();
             abilityHighlightedCells.Clear();
+            enemyDangerHighlightedCells.Clear();
             ClearContent();
             currentColumns = 0;
             currentRows = 0;
@@ -177,6 +180,34 @@ namespace TetrisTactic.PlayField
             }
 
             abilityHighlightedCells.Clear();
+            ApplyHighlights();
+        }
+
+        public void SetEnemyDangerHighlights(IReadOnlyList<GridPosition> positions)
+        {
+            enemyDangerHighlightedCells.Clear();
+            if (positions == null)
+            {
+                ApplyHighlights();
+                return;
+            }
+
+            for (var i = 0; i < positions.Count; i++)
+            {
+                enemyDangerHighlightedCells.Add(positions[i]);
+            }
+
+            ApplyHighlights();
+        }
+
+        public void ClearEnemyDangerHighlights()
+        {
+            if (enemyDangerHighlightedCells.Count == 0)
+            {
+                return;
+            }
+
+            enemyDangerHighlightedCells.Clear();
             ApplyHighlights();
         }
 
@@ -335,6 +366,12 @@ namespace TetrisTactic.PlayField
                 if (moveHighlightedCells.Contains(position))
                 {
                     pair.Value.SetHighlight(true, moveHighlightColor);
+                    continue;
+                }
+
+                if (enemyDangerHighlightedCells.Contains(position))
+                {
+                    pair.Value.SetHighlight(true, enemyDangerHighlightColor);
                     continue;
                 }
 

@@ -35,6 +35,8 @@ namespace TetrisTactic.PlayField
         }
 
         public bool HasActiveField => playFieldModel != null;
+        public int Columns => playFieldModel?.Columns ?? 0;
+        public int Rows => playFieldModel?.Rows ?? 0;
 
         public void CreateField()
         {
@@ -54,6 +56,7 @@ namespace TetrisTactic.PlayField
             {
                 playFieldView.ClearMoveHighlights();
                 playFieldView.ClearAbilityHighlights();
+                playFieldView.ClearEnemyDangerHighlights();
                 playFieldView.Clear();
             }
         }
@@ -71,6 +74,23 @@ namespace TetrisTactic.PlayField
         public UnitRuntimeModel GetPlayerUnit()
         {
             return playFieldModel?.PlayerUnit;
+        }
+
+        public IReadOnlyList<UnitRuntimeModel> GetEnemyUnits()
+        {
+            if (playFieldModel == null)
+            {
+                return Array.Empty<UnitRuntimeModel>();
+            }
+
+            var enemies = playFieldModel.EnemyUnits;
+            var result = new List<UnitRuntimeModel>(enemies.Count);
+            for (var i = 0; i < enemies.Count; i++)
+            {
+                result.Add(enemies[i]);
+            }
+
+            return result;
         }
 
         public IReadOnlyList<GridPosition> GetLegalPlayerMoveCells()
@@ -117,6 +137,49 @@ namespace TetrisTactic.PlayField
             return moved;
         }
 
+        public IReadOnlyList<GridPosition> GetLegalUnitMoveCells(UnitRuntimeModel unit)
+        {
+            var result = new List<GridPosition>(4);
+            if (playFieldModel == null || unit == null || !unit.Health.IsAlive)
+            {
+                return result;
+            }
+
+            var unitPosition = unit.Position;
+            for (var i = 0; i < NeighborOffsets.Length; i++)
+            {
+                var offset = NeighborOffsets[i];
+                var destination = new GridPosition(unitPosition.X + offset.X, unitPosition.Y + offset.Y);
+                if (CanMoveUnitTo(unit, destination))
+                {
+                    result.Add(destination);
+                }
+            }
+
+            return result;
+        }
+
+        public bool TryMoveUnit(UnitRuntimeModel unit, GridPosition destination)
+        {
+            if (playFieldModel == null || unit == null || !unit.Health.IsAlive)
+            {
+                return false;
+            }
+
+            if (!CanMoveUnitTo(unit, destination))
+            {
+                return false;
+            }
+
+            var moved = playFieldModel.TryMoveUnit(unit, destination);
+            if (moved)
+            {
+                UpdateView();
+            }
+
+            return moved;
+        }
+
         public bool CanMovePlayerTo(GridPosition destination)
         {
             if (playFieldModel == null || playFieldModel.PlayerUnit == null)
@@ -132,6 +195,43 @@ namespace TetrisTactic.PlayField
             }
 
             return playFieldModel.IsInside(destination) && playFieldModel.IsEmpty(destination);
+        }
+
+        public bool CanMoveUnitTo(UnitRuntimeModel unit, GridPosition destination)
+        {
+            if (playFieldModel == null || unit == null || !unit.Health.IsAlive)
+            {
+                return false;
+            }
+
+            var unitPosition = unit.Position;
+            var distance = Mathf.Abs(unitPosition.X - destination.X) + Mathf.Abs(unitPosition.Y - destination.Y);
+            if (distance != 1)
+            {
+                return false;
+            }
+
+            return playFieldModel.IsInside(destination) && playFieldModel.IsEmpty(destination);
+        }
+
+        public bool IsCellPassableForMovement(GridPosition position, UnitRuntimeModel movingUnit)
+        {
+            if (playFieldModel == null)
+            {
+                return false;
+            }
+
+            if (!playFieldModel.IsInside(position))
+            {
+                return false;
+            }
+
+            if (movingUnit != null && movingUnit.Position == position)
+            {
+                return true;
+            }
+
+            return playFieldModel.IsEmpty(position);
         }
 
         public bool IsInside(GridPosition position)
@@ -215,6 +315,26 @@ namespace TetrisTactic.PlayField
             }
 
             playFieldView.ClearAbilityHighlights();
+        }
+
+        public void SetEnemyDangerHighlights(IReadOnlyList<GridPosition> positions)
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.SetEnemyDangerHighlights(positions);
+        }
+
+        public void ClearEnemyDangerHighlights()
+        {
+            if (playFieldView == null)
+            {
+                return;
+            }
+
+            playFieldView.ClearEnemyDangerHighlights();
         }
 
         public void Dispose()

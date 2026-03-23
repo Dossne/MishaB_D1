@@ -69,6 +69,49 @@ namespace TetrisTactic.Abilities
             RefreshButtons();
         }
 
+        public IReadOnlyList<GridPosition> GetPotentialImpactCells(UnitRuntimeModel caster)
+        {
+            var result = new List<GridPosition>();
+            if (caster == null)
+            {
+                return result;
+            }
+
+            var unique = new HashSet<GridPosition>();
+            for (var abilityIndex = 0; abilityIndex < abilities.Count; abilityIndex++)
+            {
+                var definition = abilities[abilityIndex].Definition;
+                var casterPosition = caster.Position;
+                var neighbors = new[]
+                {
+                    new GridPosition(casterPosition.X, casterPosition.Y + 1),
+                    new GridPosition(casterPosition.X + 1, casterPosition.Y),
+                    new GridPosition(casterPosition.X, casterPosition.Y - 1),
+                    new GridPosition(casterPosition.X - 1, casterPosition.Y),
+                };
+
+                for (var i = 0; i < neighbors.Length; i++)
+                {
+                    var baseCell = neighbors[i];
+                    if (!AbilityResolver.TryResolveCast(definition, casterPosition, baseCell, playFieldController, out var affectedCells, out _))
+                    {
+                        continue;
+                    }
+
+                    for (var cellIndex = 0; cellIndex < affectedCells.Count; cellIndex++)
+                    {
+                        var affected = affectedCells[cellIndex];
+                        if (unique.Add(affected))
+                        {
+                            result.Add(affected);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public void ClearSelection()
         {
             selectedAbilityIndex = -1;
