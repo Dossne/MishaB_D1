@@ -1,4 +1,5 @@
-using TetrisTactic.MainUi;
+﻿using TetrisTactic.MainUi;
+using TetrisTactic.PlayField;
 using UnityEngine;
 
 namespace TetrisTactic.Core
@@ -7,6 +8,7 @@ namespace TetrisTactic.Core
     {
         [SerializeField] private ConfigurationProvider configurationProvider;
         [SerializeField] private MainUiProvider mainUiProvider;
+        [SerializeField] private PlayFieldView playFieldView;
 
         private GameManager gameManager;
         private bool configurationRegistered;
@@ -14,6 +16,7 @@ namespace TetrisTactic.Core
         public GameManager GameManager => gameManager;
         public ConfigurationProvider ConfigurationProvider => configurationProvider;
         public MainUiProvider MainUiProvider => mainUiProvider;
+        public PlayFieldView PlayFieldView => playFieldView;
 
         public void RegisterGameManager(GameManager manager)
         {
@@ -44,6 +47,16 @@ namespace TetrisTactic.Core
             }
 
             mainUiProvider = provider;
+        }
+
+        public void RegisterPlayFieldView(PlayFieldView view)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            playFieldView = view;
         }
     }
 }

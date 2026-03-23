@@ -1,4 +1,6 @@
-using UnityEngine;
+﻿using UnityEngine;
+using TetrisTactic.LevelFlow;
+using TetrisTactic.PlayField;
 
 namespace TetrisTactic.Core
 {
@@ -9,6 +11,9 @@ namespace TetrisTactic.Core
         private readonly System.Collections.Generic.List<IInitializableController> initializableControllers = new();
         private readonly System.Collections.Generic.List<IUpdatableController> updatableControllers = new();
         private readonly System.Collections.Generic.List<IDisposableController> disposableControllers = new();
+
+        private PlayFieldController playFieldController;
+        private LevelFlowController levelFlowController;
 
         private void Awake()
         {
@@ -22,7 +27,11 @@ namespace TetrisTactic.Core
             // Stage 0 bootstrap order: register GameManager first, then ConfigurationProvider.
             serviceLocator.RegisterGameManager(this);
             serviceLocator.RegisterConfigurationProvider();
+        }
 
+        private void Start()
+        {
+            BuildControllers();
             InitializeControllers();
         }
 
@@ -52,6 +61,33 @@ namespace TetrisTactic.Core
             for (var i = 0; i < initializableControllers.Count; i++)
             {
                 initializableControllers[i].Initialize();
+            }
+        }
+
+        private void BuildControllers()
+        {
+            playFieldController = new PlayFieldController(serviceLocator);
+            RegisterController(playFieldController);
+
+            levelFlowController = new LevelFlowController(serviceLocator, playFieldController);
+            RegisterController(levelFlowController);
+        }
+
+        private void RegisterController(object controller)
+        {
+            if (controller is IInitializableController initializable)
+            {
+                initializableControllers.Add(initializable);
+            }
+
+            if (controller is IUpdatableController updatable)
+            {
+                updatableControllers.Add(updatable);
+            }
+
+            if (controller is IDisposableController disposable)
+            {
+                disposableControllers.Add(disposable);
             }
         }
     }

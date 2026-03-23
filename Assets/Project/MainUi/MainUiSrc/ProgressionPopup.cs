@@ -1,10 +1,12 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace TetrisTactic.MainUi
 {
     public sealed class ProgressionPopup : MonoBehaviour
     {
+        public event System.Action StartLevelRequested;
+
         [SerializeField] private Text levelText;
         [SerializeField] private Button upgradeDamageButton;
         [SerializeField] private Button upgradeHealthButton;
@@ -98,6 +100,7 @@ namespace TetrisTactic.MainUi
         private void OnStartLevelPressed()
         {
             Debug.Log("ProgressionPopup: Start Level button pressed.");
+            StartLevelRequested?.Invoke();
         }
     }
 }

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a8ef1f8452044ce869dbecf6f404eb3, type: 3}
+  m_Name: PlayFieldConfig
+  m_EditorClassIdentifier: 
+  columns: 6
+  rows: 8
+  cellWorldSize: 1
+  emptyCellColor: {r: 0.2, g: 0.24, b: 0.3, a: 1}
+  playerCellColor: {r: 0.22, g: 0.78, b: 0.32, a: 1}
+  enemyCellColor: {r: 0.86, g: 0.2, b: 0.2, a: 1}
+  treasureCellColor: {r: 1, g: 0.82, b: 0.18, a: 1}
+  obstacleCellColor: {r: 0.43, g: 0.45, b: 0.5, a: 1}

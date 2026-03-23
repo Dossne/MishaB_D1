@@ -1,4 +1,4 @@
-using TetrisTactic.Core;
+﻿using TetrisTactic.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM
@@ -41,7 +41,6 @@ namespace TetrisTactic.MainUi
 
         private void Start()
         {
-            progressionPopup.Show(1);
             resourceCounter.Refresh(0);
         }
 
@@ -295,5 +294,3 @@ namespace TetrisTactic.MainUi
         }
     }
 }
-
-
