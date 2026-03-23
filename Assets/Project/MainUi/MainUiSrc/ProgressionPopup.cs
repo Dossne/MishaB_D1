@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using TetrisTactic.Resource;
 
 namespace TetrisTactic.MainUi
 {
@@ -14,9 +15,17 @@ namespace TetrisTactic.MainUi
         [SerializeField] private Text upgradeDamagePriceText;
         [SerializeField] private Text upgradeHealthPriceText;
 
+        private ResourceController resourceController;
+
         private void Awake()
         {
             RefreshPriceLabels("1", "1");
+            BindListeners();
+        }
+
+        public void Initialize(ResourceController controller)
+        {
+            resourceController = controller;
         }
 
         public void Show(int level)
@@ -89,12 +98,36 @@ namespace TetrisTactic.MainUi
 
         private void OnUpgradeDamagePressed()
         {
-            Debug.Log("ProgressionPopup: Damage upgrade button pressed.");
+            if (resourceController == null)
+            {
+                Debug.LogWarning("ProgressionPopup: ResourceController is not initialized.");
+                return;
+            }
+
+            if (!resourceController.TrySpend(1))
+            {
+                Debug.Log("ProgressionPopup: Not enough resource for damage upgrade.");
+                return;
+            }
+
+            Debug.Log("ProgressionPopup: Damage upgrade purchased for 1 resource.");
         }
 
         private void OnUpgradeHealthPressed()
         {
-            Debug.Log("ProgressionPopup: Health upgrade button pressed.");
+            if (resourceController == null)
+            {
+                Debug.LogWarning("ProgressionPopup: ResourceController is not initialized.");
+                return;
+            }
+
+            if (!resourceController.TrySpend(1))
+            {
+                Debug.Log("ProgressionPopup: Not enough resource for health upgrade.");
+                return;
+            }
+
+            Debug.Log("ProgressionPopup: Health upgrade purchased for 1 resource.");
         }
 
         private void OnStartLevelPressed()

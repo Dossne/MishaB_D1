@@ -1,4 +1,4 @@
-using TetrisTactic.Core;
+﻿using TetrisTactic.Core;
 using TetrisTactic.FinishFlow;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -43,9 +43,9 @@ namespace TetrisTactic.MainUi
             }
         }
 
-        private void Start()
+        public ResourceCounter[] GetResourceCounters()
         {
-            resourceCounter.Refresh(0);
+            return GetComponentsInChildren<ResourceCounter>(true);
         }
 
         private void EnsureEventSystem()
@@ -169,7 +169,7 @@ namespace TetrisTactic.MainUi
             var popupBackground = popupObject.GetComponent<Image>();
             popupBackground.color = new Color(0.08f, 0.1f, 0.14f, 0.92f);
 
-            var topPlate = new GameObject("TopLeftResourcePlate", typeof(RectTransform), typeof(Image));
+            var topPlate = new GameObject("TopLeftResourcePlate", typeof(RectTransform), typeof(Image), typeof(ResourceCounter));
             var topPlateRect = topPlate.GetComponent<RectTransform>();
             topPlateRect.SetParent(popupRect, false);
             topPlateRect.anchorMin = new Vector2(0f, 1f);
@@ -179,8 +179,11 @@ namespace TetrisTactic.MainUi
             topPlateRect.sizeDelta = new Vector2(300f, 80f);
             topPlate.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.28f, 0.95f);
 
-            var plateLabel = CreateLabel("PlateLabel", topPlateRect, "Resource Plate", 26, TextAnchor.MiddleCenter);
+            var plateLabel = CreateLabel("PlateLabel", topPlateRect, "Resource: 0", 26, TextAnchor.MiddleCenter);
             StretchToParent(plateLabel.rectTransform);
+
+            var popupCounter = topPlate.GetComponent<ResourceCounter>();
+            popupCounter.BindAmountText(plateLabel);
 
             var levelText = CreateLabel("LevelText", popupRect, "Level 1", 64, TextAnchor.UpperCenter);
             var levelRect = levelText.rectTransform;

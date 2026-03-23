@@ -1,5 +1,6 @@
 ﻿using TetrisTactic.MainUi;
 using TetrisTactic.PlayField;
+using TetrisTactic.Resource;
 using UnityEngine;
 
 namespace TetrisTactic.Core
@@ -11,12 +12,14 @@ namespace TetrisTactic.Core
         [SerializeField] private PlayFieldView playFieldView;
 
         private GameManager gameManager;
+        private ResourceController resourceController;
         private bool configurationRegistered;
 
         public GameManager GameManager => gameManager;
         public ConfigurationProvider ConfigurationProvider => configurationProvider;
         public MainUiProvider MainUiProvider => mainUiProvider;
         public PlayFieldView PlayFieldView => playFieldView;
+        public ResourceController ResourceController => resourceController;
 
         public void RegisterGameManager(GameManager manager)
         {
@@ -57,6 +60,11 @@ namespace TetrisTactic.Core
             }
 
             playFieldView = view;
+        }
+
+        public void RegisterResourceController(ResourceController controller)
+        {
+            resourceController = controller;
         }
     }
 }
