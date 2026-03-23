@@ -1,4 +1,5 @@
-﻿using TetrisTactic.Core;
+using TetrisTactic.Core;
+using TetrisTactic.FinishFlow;
 using UnityEngine;
 using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM
@@ -15,6 +16,7 @@ namespace TetrisTactic.MainUi
         [SerializeField] private RectTransform hudParent;
         [SerializeField] private RectTransform popupParent;
         [SerializeField] private ProgressionPopup progressionPopup;
+        [SerializeField] private FinishPopup finishPopup;
         [SerializeField] private ResourceCounter resourceCounter;
 
         private RectTransform canvasRoot;
@@ -23,6 +25,7 @@ namespace TetrisTactic.MainUi
         public RectTransform HudParent => hudParent;
         public RectTransform PopupParent => popupParent;
         public ProgressionPopup ProgressionPopup => progressionPopup;
+        public FinishPopup FinishPopup => finishPopup;
         public ResourceCounter ResourceCounter => resourceCounter;
 
         private void Awake()
@@ -32,6 +35,7 @@ namespace TetrisTactic.MainUi
             EnsureMainParents();
             EnsureResourceCounter();
             EnsureProgressionPopup();
+            EnsureFinishPopup();
 
             if (serviceLocator != null)
             {
@@ -196,6 +200,103 @@ namespace TetrisTactic.MainUi
 
             progressionPopup = popupObject.GetComponent<ProgressionPopup>();
             progressionPopup.BindViews(levelText, damageUpgrade, healthUpgrade, startLevelButton, damagePrice, healthPrice);
+        }
+
+        private void EnsureFinishPopup()
+        {
+            if (finishPopup != null)
+            {
+                return;
+            }
+
+            var popupObject = new GameObject("FinishPopup", typeof(RectTransform), typeof(Image), typeof(FinishPopup));
+            var popupRect = popupObject.GetComponent<RectTransform>();
+            popupRect.SetParent(popupParent, false);
+            StretchToParent(popupRect);
+
+            var popupBackground = popupObject.GetComponent<Image>();
+            popupBackground.color = new Color(0.07f, 0.08f, 0.12f, 0.92f);
+
+            var panelObject = new GameObject("Panel", typeof(RectTransform), typeof(Image));
+            var panelRect = panelObject.GetComponent<RectTransform>();
+            panelRect.SetParent(popupRect, false);
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.sizeDelta = new Vector2(760f, 560f);
+            panelObject.GetComponent<Image>().color = new Color(0.16f, 0.2f, 0.3f, 0.98f);
+
+            var titleText = CreateLabel("TitleText", panelRect, "Defeat", 66, TextAnchor.UpperCenter);
+            var titleRect = titleText.rectTransform;
+            titleRect.anchorMin = new Vector2(0.5f, 1f);
+            titleRect.anchorMax = new Vector2(0.5f, 1f);
+            titleRect.pivot = new Vector2(0.5f, 1f);
+            titleRect.anchoredPosition = new Vector2(0f, -44f);
+            titleRect.sizeDelta = new Vector2(360f, 100f);
+
+            var rewardRowObject = new GameObject("RewardRow", typeof(RectTransform));
+            var rewardRowRect = rewardRowObject.GetComponent<RectTransform>();
+            rewardRowRect.SetParent(panelRect, false);
+            rewardRowRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rewardRowRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rewardRowRect.pivot = new Vector2(0.5f, 0.5f);
+            rewardRowRect.anchoredPosition = new Vector2(0f, 76f);
+            rewardRowRect.sizeDelta = new Vector2(360f, 84f);
+
+            var resourceIconObject = new GameObject("ResourceIcon", typeof(RectTransform), typeof(Image));
+            var resourceIconRect = resourceIconObject.GetComponent<RectTransform>();
+            resourceIconRect.SetParent(rewardRowRect, false);
+            resourceIconRect.anchorMin = new Vector2(0f, 0.5f);
+            resourceIconRect.anchorMax = new Vector2(0f, 0.5f);
+            resourceIconRect.pivot = new Vector2(0f, 0.5f);
+            resourceIconRect.anchoredPosition = new Vector2(0f, 0f);
+            resourceIconRect.sizeDelta = new Vector2(64f, 64f);
+
+            var resourceIconImage = resourceIconObject.GetComponent<Image>();
+            resourceIconImage.color = new Color(0.97f, 0.78f, 0.17f, 1f);
+
+            var resourceAmountText = CreateLabel("ResourceAmountText", rewardRowRect, "+0", 48, TextAnchor.MiddleLeft);
+            var resourceAmountRect = resourceAmountText.rectTransform;
+            resourceAmountRect.anchorMin = new Vector2(0f, 0f);
+            resourceAmountRect.anchorMax = new Vector2(1f, 1f);
+            resourceAmountRect.offsetMin = new Vector2(86f, 0f);
+            resourceAmountRect.offsetMax = new Vector2(0f, 0f);
+
+            var victoryBonusObject = new GameObject("VictoryBonusBlock", typeof(RectTransform), typeof(Image));
+            var victoryBonusRect = victoryBonusObject.GetComponent<RectTransform>();
+            victoryBonusRect.SetParent(panelRect, false);
+            victoryBonusRect.anchorMin = new Vector2(0.5f, 0.5f);
+            victoryBonusRect.anchorMax = new Vector2(0.5f, 0.5f);
+            victoryBonusRect.pivot = new Vector2(0.5f, 0.5f);
+            victoryBonusRect.anchoredPosition = new Vector2(0f, -20f);
+            victoryBonusRect.sizeDelta = new Vector2(520f, 100f);
+            victoryBonusObject.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.26f, 0.95f);
+
+            var victoryBonusLabel = CreateLabel("VictoryBonusLabel", victoryBonusRect, "Victory Bonus", 32, TextAnchor.MiddleLeft);
+            var victoryBonusLabelRect = victoryBonusLabel.rectTransform;
+            victoryBonusLabelRect.anchorMin = new Vector2(0f, 0f);
+            victoryBonusLabelRect.anchorMax = new Vector2(1f, 1f);
+            victoryBonusLabelRect.offsetMin = new Vector2(20f, 0f);
+            victoryBonusLabelRect.offsetMax = new Vector2(-160f, 0f);
+
+            var victoryBonusValueText = CreateLabel("VictoryBonusAmountText", victoryBonusRect, "+1", 34, TextAnchor.MiddleRight);
+            var victoryBonusValueRect = victoryBonusValueText.rectTransform;
+            victoryBonusValueRect.anchorMin = new Vector2(0f, 0f);
+            victoryBonusValueRect.anchorMax = new Vector2(1f, 1f);
+            victoryBonusValueRect.offsetMin = new Vector2(160f, 0f);
+            victoryBonusValueRect.offsetMax = new Vector2(-24f, 0f);
+
+            var continueButton = CreatePrimaryButton(panelRect, "ContinueButton", "Continue", new Vector2(0f, -190f), new Vector2(420f, 112f));
+
+            finishPopup = popupObject.GetComponent<FinishPopup>();
+            finishPopup.BindViews(
+                titleText,
+                resourceIconImage,
+                resourceAmountText,
+                victoryBonusObject,
+                victoryBonusValueText,
+                continueButton);
+            finishPopup.Hide();
         }
 
         private static RectTransform EnsureParent(RectTransform current, string name, Transform parent)
