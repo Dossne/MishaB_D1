@@ -1,4 +1,4 @@
-﻿using TetrisTactic.Audio;
+using TetrisTactic.Audio;
 using TetrisTactic.CameraFx;
 using TetrisTactic.Core;
 using TetrisTactic.PlayField;
@@ -49,7 +49,7 @@ namespace TetrisTactic.Feedback
 
             var worldPosition = ResolveUnitWorldPosition(attacker);
             floatingTextController.ShowCirclePulse(worldPosition, new Color(1f, 0.85f, 0.25f, 0.86f), 0.18f, 0.64f);
-            SpawnEmojiBubble(worldPosition + (Vector3.up * 0.35f), "⚔", new Color(1f, 0.96f, 0.75f, 1f), 0.35f);
+            SpawnEmojiBubble(worldPosition + (Vector3.up * 0.35f), "?", new Color(1f, 0.96f, 0.75f, 1f), 0.35f);
             audioController.PlayCue(AudioCue.AttackCast, worldPosition);
         }
 
@@ -69,6 +69,7 @@ namespace TetrisTactic.Feedback
                 return;
             }
 
+            var targetUnitWorld = ResolveUnitWorldPosition(damageEvent.TargetUnit);
             if (!playFieldController.TryGetCellWorldPosition(damageEvent.TargetPosition, out var worldPosition))
             {
                 worldPosition = new Vector3(damageEvent.TargetPosition.X, damageEvent.TargetPosition.Y, 0f);
@@ -78,12 +79,13 @@ namespace TetrisTactic.Feedback
                 ? new Color(1f, 0.85f, 0.32f, 1f)
                 : new Color(1f, 0.42f, 0.42f, 1f);
 
-            floatingTextController.ShowWorldText(worldPosition + (Vector3.up * 0.2f), $"-{damageEvent.DamageAmount}", damageColor);
+            var textAnchor = targetUnitWorld != Vector3.zero ? targetUnitWorld : worldPosition;
+            floatingTextController.ShowWorldText(textAnchor + (Vector3.up * 0.46f), $"-{damageEvent.DamageAmount}", damageColor);
             floatingTextController.ShowCirclePulse(worldPosition, new Color(1f, 0.26f, 0.2f, 0.9f), 0.14f, 0.58f);
 
             if (damageEvent.WasFatal)
             {
-                SpawnEmojiBubble(worldPosition + (Vector3.up * 0.42f), "💥", Color.white, 0.5f);
+                SpawnEmojiBubble(worldPosition + (Vector3.up * 0.42f), "??", Color.white, 0.5f);
                 floatingTextController.ShowWorldText(worldPosition + (Vector3.up * 0.55f), "KO", new Color(1f, 0.94f, 0.7f, 1f), 0.6f, 0.35f, 44);
                 audioController.PlayCue(AudioCue.UnitDefeated, worldPosition);
             }
@@ -129,4 +131,3 @@ namespace TetrisTactic.Feedback
         }
     }
 }
-

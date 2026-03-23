@@ -15,16 +15,16 @@ namespace TetrisTactic.PlayField
     public sealed class PlayFieldView : MonoBehaviour
     {
         private const float BoardFitWidthPaddingWorld = 0.2f;
-        private const float ZonePreviewMinAlpha = 0.62f;
-        private const float ZonePreviewMaxAlpha = 0.86f;
+        private const float ZonePreviewMinAlpha = 0.54f;
+        private const float ZonePreviewMaxAlpha = 0.78f;
         private const float ZonePulseSpeed = 4.6f;
         private const float ZonePulseScaleFactor = 0.06f;
         private const float ZoneFillRatio = 0.53f;
         private const int ZoneSortingOrder = 12;
 
         private const int MovePreviewSortingOrder = 9;
-        private const float MovePreviewMinAlpha = 0.62f;
-        private const float MovePreviewMaxAlpha = 0.88f;
+        private const float MovePreviewMinAlpha = 0.54f;
+        private const float MovePreviewMaxAlpha = 0.8f;
         private const float MovePulseScaleFactor = 0.08f;
         private const float MovePreviewFillRatio = 0.5f;
 
@@ -834,6 +834,8 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
+
 
 
 

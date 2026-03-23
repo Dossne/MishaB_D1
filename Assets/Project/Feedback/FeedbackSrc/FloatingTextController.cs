@@ -7,8 +7,8 @@ namespace TetrisTactic.Feedback
 {
     public sealed class FloatingTextController : IInitializableController, IDisposableController
     {
-        private const float DefaultLifetime = 0.55f;
-        private const float DefaultRiseDistance = 0.38f;
+        private const float DefaultLifetime = 1.95f;
+        private const float DefaultRiseDistance = 0.32f;
         private const int DefaultSortingOrder = 40;
 
         private MonoBehaviour coroutineRunner;
@@ -52,18 +52,25 @@ namespace TetrisTactic.Feedback
             textObject.transform.position = worldPosition;
 
             var textMesh = textObject.GetComponent<TextMesh>();
-            GameTextStyling.SetWorldText(textMesh, text);
+            textMesh.text = text;
             textMesh.anchor = TextAnchor.MiddleCenter;
             textMesh.alignment = TextAlignment.Center;
-            textMesh.characterSize = 0.18f;
-            textMesh.fontSize = 56;
+            textMesh.characterSize = 0.11f;
+            textMesh.fontSize = 26;
             textMesh.font = LoadGameFont();
+            textMesh.richText = false;
+            textMesh.lineSpacing = 1f;
+            textMesh.tabSize = 4f;
             textMesh.color = color;
 
             var renderer = textMesh.GetComponent<MeshRenderer>();
             if (renderer != null)
             {
                 renderer.sortingOrder = sortingOrder;
+                if (textMesh.font != null && textMesh.font.material != null)
+                {
+                    renderer.sharedMaterial = textMesh.font.material;
+                }
             }
 
             coroutineRunner.StartCoroutine(AnimateFloatingTextRoutine(textObject.transform, textMesh, Mathf.Max(0.1f, lifetime), riseDistance));
@@ -104,7 +111,8 @@ namespace TetrisTactic.Feedback
                 textTransform.position = startPosition + (Vector3.up * rise * eased);
 
                 var color = textMesh.color;
-                color.a = 1f - t;
+                var fadeT = Mathf.InverseLerp(0.78f, 1f, t);
+                color.a = 1f - (fadeT * fadeT * fadeT);
                 textMesh.color = color;
 
                 yield return null;
@@ -174,4 +182,5 @@ namespace TetrisTactic.Feedback
         }
     }
 }
+
 
