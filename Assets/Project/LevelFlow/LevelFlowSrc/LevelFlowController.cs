@@ -96,6 +96,7 @@ namespace TetrisTactic.LevelFlow
 
             finishPopup.Hide();
             progressionPopup.Show(progressionController.CurrentLevel);
+            RefreshProgressionPopupState();
         }
 
         public void Dispose()
@@ -149,6 +150,8 @@ namespace TetrisTactic.LevelFlow
             }
 
             Debug.Log($"ProgressionPopup: Purchased {upgradeType} upgrade.");
+            progressionPopup.PlayUpgradeBounce(upgradeType);
+            RefreshProgressionPopupState();
         }
 
         private void OnPlayerTurnEnded(PlayerTurnActionType action)
@@ -271,11 +274,27 @@ namespace TetrisTactic.LevelFlow
 
             finishPopup.Hide();
             progressionPopup.Show(progressionController.CurrentLevel);
+            RefreshProgressionPopupState();
         }
 
         private void OnResourceBalanceChanged(int amount)
         {
             RefreshResourceCounters(amount);
+            RefreshProgressionPopupState();
+        }
+
+        private void RefreshProgressionPopupState()
+        {
+            if (progressionPopup == null)
+            {
+                return;
+            }
+
+            progressionPopup.RefreshUpgradeState(
+                progressionController.GetCurrentPlayerDamageValue(),
+                progressionController.GetCurrentPlayerHpValue(),
+                progressionController.GetUpgradeCost(),
+                resourceController.GetCurrentAmount());
         }
 
         private void RefreshResourceCounters(int amount)
@@ -297,5 +316,6 @@ namespace TetrisTactic.LevelFlow
         }
     }
 }
+
 
 

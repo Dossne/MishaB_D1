@@ -1,5 +1,6 @@
 using TetrisTactic.Core;
 using TetrisTactic.Resource;
+using TetrisTactic.Units;
 using UnityEngine;
 
 namespace TetrisTactic.Progression
@@ -10,6 +11,7 @@ namespace TetrisTactic.Progression
         private readonly ResourceController resourceController;
 
         private LevelProgressionConfig progressionConfig;
+        private UnitConfig unitConfig;
         private PlayerUpgradeState playerUpgradeState = PlayerUpgradeState.CreateDefault();
 
         public ProgressionController(ServiceLocator serviceLocator, ResourceController resourceController)
@@ -23,7 +25,7 @@ namespace TetrisTactic.Progression
 
         public void Initialize()
         {
-            if (progressionConfig != null)
+            if (progressionConfig != null && unitConfig != null)
             {
                 return;
             }
@@ -35,6 +37,15 @@ namespace TetrisTactic.Progression
             catch
             {
                 progressionConfig = LevelProgressionConfig.CreateDefault();
+            }
+
+            try
+            {
+                unitConfig = serviceLocator.ConfigurationProvider.GetConfig<UnitConfig>();
+            }
+            catch
+            {
+                unitConfig = UnitConfig.CreateDefault();
             }
         }
 
@@ -48,6 +59,26 @@ namespace TetrisTactic.Progression
         {
             EnsureInitialized();
             return progressionConfig.VictoryBonusResource;
+        }
+
+        public int GetUpgradeCost()
+        {
+            EnsureInitialized();
+            return progressionConfig.UpgradeCost;
+        }
+
+        public int GetCurrentPlayerDamageValue()
+        {
+            EnsureInitialized();
+            var data = unitConfig.CreateUnitData(UnitType.Player, playerUpgradeState.DamageBonus, playerUpgradeState.HpBonus);
+            return Mathf.Max(1, data.BaseDamage);
+        }
+
+        public int GetCurrentPlayerHpValue()
+        {
+            EnsureInitialized();
+            var data = unitConfig.CreateUnitData(UnitType.Player, playerUpgradeState.DamageBonus, playerUpgradeState.HpBonus);
+            return Mathf.Max(1, data.MaxHp);
         }
 
         public bool TryPurchaseUpgrade(PlayerUpgradeType upgradeType)
@@ -73,7 +104,7 @@ namespace TetrisTactic.Progression
 
         private void EnsureInitialized()
         {
-            if (progressionConfig == null)
+            if (progressionConfig == null || unitConfig == null)
             {
                 Initialize();
             }

@@ -214,19 +214,24 @@ namespace TetrisTactic.MainUi
             levelRect.pivot = new Vector2(0.5f, 1f);
             levelRect.anchoredPosition = new Vector2(0f, -30f);
             levelRect.sizeDelta = new Vector2(420f, 100f);
-
             var damageUpgrade = CreateUpgradeButton(popupRect, "UpgradeDamageButton", "+1 Ability Damage", new Vector2(0f, 120f));
-            var damagePrice = CreatePriceLabel(damageUpgrade.transform as RectTransform, "DamagePriceLabel", "Price: 1");
-            AddButtonIcon(damageUpgrade.transform as RectTransform, damageIconSprite, "DamageIcon");
+            var damageUpgradeRect = damageUpgrade.transform as RectTransform;
+            var damagePrice = CreatePriceLabel(damageUpgradeRect, "DamagePriceLabel", "1", resourceIconSprite);
+            AddButtonIcon(damageUpgradeRect, damageIconSprite, "DamageIcon");
+            var damageValue = CreateUpgradeValueLabel(damageUpgradeRect, "DamageValueText", new Color(1f, 0.9f, 0.2f, 1f));
+            ConfigureStatValueLabel(damageValue, new Color(1f, 0.9f, 0.2f, 1f));
 
             var healthUpgrade = CreateUpgradeButton(popupRect, "UpgradeHealthButton", "+1 Player HP", new Vector2(0f, -20f));
-            var healthPrice = CreatePriceLabel(healthUpgrade.transform as RectTransform, "HealthPriceLabel", "Price: 1");
-            AddButtonIcon(healthUpgrade.transform as RectTransform, healthIconSprite, "HealthIcon");
+            var healthUpgradeRect = healthUpgrade.transform as RectTransform;
+            var healthPrice = CreatePriceLabel(healthUpgradeRect, "HealthPriceLabel", "1", resourceIconSprite);
+            AddButtonIcon(healthUpgradeRect, healthIconSprite, "HealthIcon");
+            var healthValue = CreateUpgradeValueLabel(healthUpgradeRect, "HealthValueText", Color.white);
+            ConfigureStatValueLabel(healthValue, Color.white);
 
             var startLevelButton = CreatePrimaryButton(popupRect, "StartLevelButton", "Start Level", new Vector2(0f, -250f), new Vector2(480f, 120f));
 
             progressionPopup = popupObject.GetComponent<ProgressionPopup>();
-            progressionPopup.BindViews(levelText, damageUpgrade, healthUpgrade, startLevelButton, damagePrice, healthPrice);
+            progressionPopup.BindViews(levelText, damageUpgrade, healthUpgrade, startLevelButton, damagePrice, healthPrice, damageValue, healthValue);
         }
 
         private void EnsureFinishPopup()
@@ -381,7 +386,7 @@ namespace TetrisTactic.MainUi
             return buttonObject.GetComponent<Button>();
         }
 
-        private static Text CreatePriceLabel(RectTransform parent, string objectName, string content)
+        private static Text CreatePriceLabel(RectTransform parent, string objectName, string content, Sprite priceIcon)
         {
             var priceLabel = CreateLabel(objectName, parent, content, 26, TextAnchor.LowerRight);
             var priceRect = priceLabel.rectTransform;
@@ -389,7 +394,56 @@ namespace TetrisTactic.MainUi
             priceRect.anchorMax = new Vector2(1f, 1f);
             priceRect.offsetMin = new Vector2(20f, 10f);
             priceRect.offsetMax = new Vector2(-20f, -10f);
+
+            var iconObject = new GameObject($"{objectName}_ResourceIcon", typeof(RectTransform), typeof(Image));
+            var iconRect = iconObject.GetComponent<RectTransform>();
+            iconRect.SetParent(parent, false);
+            iconRect.anchorMin = new Vector2(1f, 0f);
+            iconRect.anchorMax = new Vector2(1f, 0f);
+            iconRect.pivot = new Vector2(1f, 0f);
+            iconRect.anchoredPosition = new Vector2(-86f, 14f);
+            iconRect.sizeDelta = new Vector2(30f, 30f);
+
+            var iconImage = iconObject.GetComponent<Image>();
+            iconImage.sprite = priceIcon;
+            iconImage.color = priceIcon != null ? Color.white : new Color(0.97f, 0.78f, 0.17f, 1f);
+
             return priceLabel;
+        }
+
+        private static Text CreateUpgradeValueLabel(RectTransform buttonRect, string objectName, Color color)
+        {
+            var valueText = CreateLabel(objectName, buttonRect, "1", 37, TextAnchor.MiddleCenter);
+            var valueRect = valueText.rectTransform;
+            valueRect.anchorMin = new Vector2(0f, 0.5f);
+            valueRect.anchorMax = new Vector2(0f, 0.5f);
+            valueRect.pivot = new Vector2(0.5f, 0.5f);
+            valueRect.anchoredPosition = new Vector2(60f, -2f);
+            valueRect.sizeDelta = new Vector2(86f, 90f);
+            valueText.fontSize = 60;
+            valueText.color = color;
+            return valueText;
+        }
+
+        private static void ConfigureStatValueLabel(Text label, Color fillColor)
+        {
+            if (label == null)
+            {
+                return;
+            }
+
+            label.fontSize = 60;
+            label.color = fillColor;
+
+            var outline = label.GetComponent<Outline>();
+            if (outline == null)
+            {
+                outline = label.gameObject.AddComponent<Outline>();
+            }
+
+            outline.effectColor = new Color(0f, 0f, 0f, 0.9f);
+            outline.effectDistance = new Vector2(1.1f, -1.1f);
+            outline.useGraphicAlpha = true;
         }
 
         private static Text CreateLabel(
@@ -487,4 +541,8 @@ namespace TetrisTactic.MainUi
 
     }
 }
+
+
+
+
 

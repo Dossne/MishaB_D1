@@ -1,3 +1,4 @@
+using System.Collections;
 using TetrisTactic.Core;
 using TetrisTactic.Progression;
 using UnityEngine;
@@ -7,6 +8,9 @@ namespace TetrisTactic.MainUi
 {
     public sealed class ProgressionPopup : MonoBehaviour
     {
+        private static readonly Color AffordablePriceColor = Color.white;
+        private static readonly Color UnaffordablePriceColor = new Color(1f, 0.34f, 0.34f, 1f);
+
         public event System.Action StartLevelRequested;
         public event System.Action<PlayerUpgradeType> UpgradeRequested;
 
@@ -16,10 +20,14 @@ namespace TetrisTactic.MainUi
         [SerializeField] private Button startLevelButton;
         [SerializeField] private Text upgradeDamagePriceText;
         [SerializeField] private Text upgradeHealthPriceText;
+        [SerializeField] private Text upgradeDamageValueText;
+        [SerializeField] private Text upgradeHealthValueText;
+
+        private Coroutine valueBounceRoutine;
 
         private void Awake()
         {
-            RefreshPriceLabels("1", "1");
+            RefreshPriceLabels(1, 1, 0);
             BindListeners();
         }
 
@@ -49,7 +57,9 @@ namespace TetrisTactic.MainUi
             Button healthUpgrade,
             Button startLevel,
             Text damagePrice,
-            Text healthPrice)
+            Text healthPrice,
+            Text damageValue,
+            Text healthValue)
         {
             levelText = level;
             upgradeDamageButton = damageUpgrade;
@@ -57,9 +67,34 @@ namespace TetrisTactic.MainUi
             startLevelButton = startLevel;
             upgradeDamagePriceText = damagePrice;
             upgradeHealthPriceText = healthPrice;
+            upgradeDamageValueText = damageValue;
+            upgradeHealthValueText = healthValue;
 
             BindListeners();
-            RefreshPriceLabels("1", "1");
+            RefreshPriceLabels(1, 1, 0);
+            SetCurrentUpgradeValues(1, 1);
+        }
+
+        public void RefreshUpgradeState(int damageValue, int healthValue, int upgradePrice, int currentResource)
+        {
+            SetCurrentUpgradeValues(damageValue, healthValue);
+            RefreshPriceLabels(upgradePrice, upgradePrice, currentResource);
+        }
+
+        public void PlayUpgradeBounce(PlayerUpgradeType upgradeType)
+        {
+            var target = upgradeType == PlayerUpgradeType.Damage ? upgradeDamageValueText : upgradeHealthValueText;
+            if (target == null)
+            {
+                return;
+            }
+
+            if (valueBounceRoutine != null)
+            {
+                StopCoroutine(valueBounceRoutine);
+            }
+
+            valueBounceRoutine = StartCoroutine(BounceTextRoutine(target.rectTransform));
         }
 
         private void BindListeners()
@@ -83,17 +118,75 @@ namespace TetrisTactic.MainUi
             }
         }
 
-        private void RefreshPriceLabels(string damagePrice, string healthPrice)
+        private void SetCurrentUpgradeValues(int damageValue, int healthValue)
+        {
+            if (upgradeDamageValueText != null)
+            {
+                GameTextStyling.SetUiText(upgradeDamageValueText, damageValue.ToString());
+            }
+
+            if (upgradeHealthValueText != null)
+            {
+                GameTextStyling.SetUiText(upgradeHealthValueText, healthValue.ToString());
+            }
+        }
+
+        private void RefreshPriceLabels(int damagePrice, int healthPrice, int currentResource)
         {
             if (upgradeDamagePriceText != null)
             {
-                GameTextStyling.SetUiText(upgradeDamagePriceText, $"Price: {damagePrice}");
+                upgradeDamagePriceText.text = FormatPriceShort(damagePrice);
+                upgradeDamagePriceText.color = currentResource >= damagePrice ? AffordablePriceColor : UnaffordablePriceColor;
             }
 
             if (upgradeHealthPriceText != null)
             {
-                GameTextStyling.SetUiText(upgradeHealthPriceText, $"Price: {healthPrice}");
+                upgradeHealthPriceText.text = FormatPriceShort(healthPrice);
+                upgradeHealthPriceText.color = currentResource >= healthPrice ? AffordablePriceColor : UnaffordablePriceColor;
             }
+        }
+
+
+        private static string FormatPriceShort(int price)
+        {
+            var safePrice = Mathf.Max(0, price);
+            var asText = safePrice.ToString();
+            if (asText.Length <= 3)
+            {
+                return asText;
+            }
+
+            var thousands = Mathf.Max(1, safePrice / 1000);
+            if (thousands >= 100)
+            {
+                return "99k";
+            }
+
+            return $"{thousands}k";
+        }
+
+        private static IEnumerator BounceTextRoutine(RectTransform target)
+        {
+            if (target == null)
+            {
+                yield break;
+            }
+
+            var duration = 0.24f;
+            var elapsed = 0f;
+            var baseScale = Vector3.one;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                var t = Mathf.Clamp01(elapsed / duration);
+                var pulse = Mathf.Sin(t * Mathf.PI);
+                var scale = 1f + (0.22f * pulse);
+                target.localScale = baseScale * scale;
+                yield return null;
+            }
+
+            target.localScale = baseScale;
         }
 
         private void OnUpgradeDamagePressed()
@@ -113,4 +206,8 @@ namespace TetrisTactic.MainUi
         }
     }
 }
+
+
+
+
 
