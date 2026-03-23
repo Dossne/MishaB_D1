@@ -515,7 +515,40 @@ Required result for this run:
 - Add only small useful debug support.
 - Keep the MVP stable, tunable, and aligned with the spec.
 
-This is the final MVP stage. Do not add speculative post-MVP systems.
+Do not add speculative post-MVP systems or Stage 14 changes in this run.
+
+When done, stop and wait for my feedback.
+```
+
+## Stage 14
+
+```text
+Read and follow these repository instructions first:
+- AGENTS.md
+- Docs/TetrisTactic_TechSpec.md
+
+Continue staged implementation of TetrisTactic.
+
+Mandatory workflow:
+- Implement only the current stage.
+- Stop at the end of the stage.
+- Report implemented scope, changed files/assets, current gameplay loop, and unverified items.
+- Ask me to test and report bugs.
+
+Current task:
+Implement Stage 14 from Docs/TetrisTactic_TechSpec.md:
+"Denser play field layout tuning"
+
+Required result for this run:
+- Reduce the base cell size by about 1.5x, from roughly 180x180 to roughly 120x120.
+- Increase the board size proportionally from 6x8 to roughly 9x12.
+- Keep the overall field footprint on screen approximately the same size and in the same position as before.
+- Preserve HUD space above the field and action panel space below it.
+- Make the final values configurable through config assets rather than gameplay hardcodes.
+- Update any grid generation, pathing, input, highlights, previews, and board layout logic that still assumes 6x8.
+- Keep the diff minimal and focused on adapting the existing systems to the denser board.
+
+Do not implement new gameplay systems in this run.
 
 When done, stop and wait for my feedback.
 ```

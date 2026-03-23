@@ -886,7 +886,7 @@ User-available interaction loop:
 ### Stage 13. Balancing and polish
 
 Goal:
-- finish the MVP prototype in a stable and tunable state.
+- finish the core prototype in a stable and tunable state.
 
 Implement:
 - move balancing values into configs;
@@ -936,3 +936,37 @@ User-available interaction loop:
 5. Do not allow ability patterns that hit the caster.
 6. Do not allow unpassable generated boards.
 7. Do not continue to the next stage without stopping for user validation.
+
+### Stage 14. Denser play field layout tuning
+
+Goal:
+- reduce cell size by about 1.5x and increase board density while preserving the total on-screen field footprint.
+
+Implement:
+- updated play field size configuration;
+- updated cell size configuration;
+- view/layout adjustments required to keep the field in the same screen position and pixel footprint;
+- validation of generation, selection, movement, attacks, and highlights on the denser board.
+
+Requirements:
+- Keep the overall field rectangle on screen approximately the same size and in the same position as before this stage.
+- Reduce the base cell size from 180x180 to approximately 120x120.
+- Increase the board size proportionally from 6x8 to approximately 9x12.
+- Final exact values must remain configurable through ScriptableObject config and must not be hardcoded into gameplay logic.
+- PlayFieldView, input handling, highlights, unit placement, pathing, generation, and ability previews must work correctly with the new grid density.
+- Preserve top HUD space and bottom action panel space.
+- Keep cells large enough for touch interaction on the target device; if the exact 1.5x reduction causes usability problems, use the closest practical values while keeping the overall field footprint unchanged.
+- If any existing generation or UI assumptions depend on 6x8, refactor only the minimal code required to make them data-driven.
+
+Files and assets expected to change:
+- `Assets/Project/PlayField/PlayFieldSrc/*` where grid sizing or layout is assumed;
+- `Assets/Project/PlayField/PlayFieldCfg/PlayFieldConfig.asset`;
+- any related config or UI layout files that assume the previous 6x8 board.
+
+Resulting vertical slice:
+- the full existing game loop remains playable on a denser board with smaller cells, while the field keeps the same overall footprint on screen.
+
+User-available interaction loop:
+- play the same combat and progression loop on the resized board;
+- verify comfort of tapping, readability, spacing, and gameplay pacing on the target device.
+
