@@ -379,7 +379,7 @@ namespace TetrisTactic.PlayField
                 spriteRenderer.sprite = obstacleCellSprite != null ? obstacleCellSprite : defaultCellSprite;
                 spriteRenderer.color = Color.white;
                 spriteRenderer.sortingOrder = 5;
-                obstacleObject.transform.localScale = Vector3.one * CalculateSpriteScale(spriteRenderer.sprite, playFieldConfig.CellWorldSize * 0.62f);
+                obstacleObject.transform.localScale = Vector3.one * CalculateSpriteScale(spriteRenderer.sprite, playFieldConfig.CellWorldSize * 0.713f);
             }
 
             var treasures = model.Treasures;
@@ -834,6 +834,7 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
 
 
 

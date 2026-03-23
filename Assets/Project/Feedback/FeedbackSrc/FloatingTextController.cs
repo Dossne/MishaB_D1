@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using TetrisTactic.Abilities;
 using TetrisTactic.Core;
 using UnityEngine;
@@ -52,11 +52,12 @@ namespace TetrisTactic.Feedback
             textObject.transform.position = worldPosition;
 
             var textMesh = textObject.GetComponent<TextMesh>();
-            textMesh.text = text;
+            GameTextStyling.SetWorldText(textMesh, text);
             textMesh.anchor = TextAnchor.MiddleCenter;
             textMesh.alignment = TextAlignment.Center;
             textMesh.characterSize = 0.18f;
             textMesh.fontSize = 56;
+            textMesh.font = LoadGameFont();
             textMesh.color = color;
 
             var renderer = textMesh.GetComponent<MeshRenderer>();
@@ -144,6 +145,23 @@ namespace TetrisTactic.Feedback
             }
         }
 
+        private static Font LoadGameFont()
+        {
+            var font = Resources.Load<Font>("bangerscyrillic");
+            if (font != null)
+            {
+                return font;
+            }
+
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font != null)
+            {
+                return font;
+            }
+
+            return Resources.GetBuiltinResource<Font>("Arial.ttf");
+        }
+
         private static MonoBehaviour CreateRunner()
         {
             var runnerObject = new GameObject("FloatingTextRunner", typeof(FloatingTextRunnerBehaviour));
@@ -156,3 +174,4 @@ namespace TetrisTactic.Feedback
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using TetrisTactic.Core;
+using TetrisTactic.Core;
 using TetrisTactic.FinishFlow;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -300,18 +300,20 @@ namespace TetrisTactic.MainUi
             victoryBonusRect.sizeDelta = new Vector2(520f, 100f);
             victoryBonusObject.GetComponent<Image>().color = new Color(0.25f, 0.35f, 0.26f, 0.95f);
 
+            AddInlineIcon(victoryBonusRect, "VictoryBonusResourceIcon", resourceIconSprite, 52f, new Vector2(18f, 0f));
+
             var victoryBonusLabel = CreateLabel("VictoryBonusLabel", victoryBonusRect, "Victory Bonus", 32, TextAnchor.MiddleLeft);
             var victoryBonusLabelRect = victoryBonusLabel.rectTransform;
             victoryBonusLabelRect.anchorMin = new Vector2(0f, 0f);
             victoryBonusLabelRect.anchorMax = new Vector2(1f, 1f);
-            victoryBonusLabelRect.offsetMin = new Vector2(20f, 0f);
-            victoryBonusLabelRect.offsetMax = new Vector2(-160f, 0f);
+            victoryBonusLabelRect.offsetMin = new Vector2(84f, 0f);
+            victoryBonusLabelRect.offsetMax = new Vector2(-180f, 0f);
 
             var victoryBonusValueText = CreateLabel("VictoryBonusAmountText", victoryBonusRect, "+1", 34, TextAnchor.MiddleRight);
             var victoryBonusValueRect = victoryBonusValueText.rectTransform;
             victoryBonusValueRect.anchorMin = new Vector2(0f, 0f);
             victoryBonusValueRect.anchorMax = new Vector2(1f, 1f);
-            victoryBonusValueRect.offsetMin = new Vector2(160f, 0f);
+            victoryBonusValueRect.offsetMin = new Vector2(200f, 0f);
             victoryBonusValueRect.offsetMax = new Vector2(-24f, 0f);
 
             var continueButton = CreatePrimaryButton(panelRect, "ContinueButton", "Continue", new Vector2(0f, -190f), new Vector2(420f, 112f));
@@ -399,9 +401,9 @@ namespace TetrisTactic.MainUi
         {
             var labelObject = new GameObject(objectName, typeof(RectTransform), typeof(Text));
             var text = labelObject.GetComponent<Text>();
-            text.text = content;
+            GameTextStyling.SetUiText(text, content);
             text.font = LoadBuiltinFont();
-            text.fontSize = fontSize;
+            text.fontSize = GameTextStyling.ScaleUiFontSize(fontSize);
             text.alignment = alignment;
             text.color = Color.white;
 
@@ -468,7 +470,13 @@ namespace TetrisTactic.MainUi
 
         private static Font LoadBuiltinFont()
         {
-            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var font = Resources.Load<Font>("bangerscyrillic");
+            if (font != null)
+            {
+                return font;
+            }
+
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (font != null)
             {
                 return font;
@@ -476,6 +484,7 @@ namespace TetrisTactic.MainUi
 
             return Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
+
     }
 }
 

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace TetrisTactic.Treasure
 {
@@ -34,7 +34,7 @@ namespace TetrisTactic.Treasure
 
         private static float CalculateScale(Sprite sprite, float cellWorldSize)
         {
-            var targetSize = cellWorldSize * 0.56f;
+            var targetSize = cellWorldSize * 0.644f;
             if (sprite == null)
             {
                 return targetSize;
@@ -62,3 +62,4 @@ namespace TetrisTactic.Treasure
         }
     }
 }
+

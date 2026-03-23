@@ -1,3 +1,4 @@
+using TetrisTactic.Core;
 using TetrisTactic.Progression;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,7 +32,7 @@ namespace TetrisTactic.MainUi
         {
             if (levelText != null)
             {
-                levelText.text = $"Level {level}";
+                GameTextStyling.SetUiText(levelText, $"Level {level}");
             }
 
             gameObject.SetActive(true);
@@ -86,12 +87,12 @@ namespace TetrisTactic.MainUi
         {
             if (upgradeDamagePriceText != null)
             {
-                upgradeDamagePriceText.text = $"Price: {damagePrice}";
+                GameTextStyling.SetUiText(upgradeDamagePriceText, $"Price: {damagePrice}");
             }
 
             if (upgradeHealthPriceText != null)
             {
-                upgradeHealthPriceText.text = $"Price: {healthPrice}";
+                GameTextStyling.SetUiText(upgradeHealthPriceText, $"Price: {healthPrice}");
             }
         }
 
@@ -112,3 +113,4 @@ namespace TetrisTactic.MainUi
         }
     }
 }
+

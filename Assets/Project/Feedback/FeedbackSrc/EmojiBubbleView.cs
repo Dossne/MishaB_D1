@@ -1,4 +1,5 @@
-﻿using System.Collections;
+using System.Collections;
+using TetrisTactic.Core;
 using UnityEngine;
 
 namespace TetrisTactic.Feedback
@@ -16,7 +17,7 @@ namespace TetrisTactic.Feedback
             }
 
             EnsureTextMesh();
-            textMesh.text = value;
+            GameTextStyling.SetWorldText(textMesh, value);
             textMesh.color = color;
             StartCoroutine(PlayRoutine(Mathf.Max(0.12f, lifetime)));
         }
@@ -37,6 +38,7 @@ namespace TetrisTactic.Feedback
             textMesh.alignment = TextAlignment.Center;
             textMesh.characterSize = 0.17f;
             textMesh.fontSize = 72;
+            textMesh.font = LoadGameFont();
             textMesh.color = Color.white;
 
             var renderer = textMesh.GetComponent<MeshRenderer>();
@@ -44,6 +46,23 @@ namespace TetrisTactic.Feedback
             {
                 renderer.sortingOrder = 45;
             }
+        }
+
+        private static Font LoadGameFont()
+        {
+            var font = Resources.Load<Font>("bangerscyrillic");
+            if (font != null)
+            {
+                return font;
+            }
+
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font != null)
+            {
+                return font;
+            }
+
+            return Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
 
         private IEnumerator PlayRoutine(float lifetime)
@@ -76,3 +95,4 @@ namespace TetrisTactic.Feedback
         }
     }
 }
+

@@ -1,3 +1,4 @@
+using TetrisTactic.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,7 +33,7 @@ namespace TetrisTactic.Abilities
             }
 
             button.interactable = interactable;
-            label.text = labelText;
+            GameTextStyling.SetUiText(label, labelText);
             background.color = selected
                 ? new Color(0.78f, 0.47f, 0.17f, 1f)
                 : new Color(0.24f, 0.31f, 0.44f, 1f);
@@ -56,3 +57,4 @@ namespace TetrisTactic.Abilities
         }
     }
 }
+

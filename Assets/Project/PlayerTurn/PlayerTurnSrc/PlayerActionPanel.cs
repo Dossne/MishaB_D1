@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TetrisTactic.Core;
 using TetrisTactic.Abilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -126,11 +127,11 @@ namespace TetrisTactic.PlayerTurn
             waitLabelRect.offsetMax = Vector2.zero;
 
             var waitLabel = waitLabelObject.GetComponent<Text>();
-            waitLabel.text = "Wait";
+            GameTextStyling.SetUiText(waitLabel, "Wait");
             waitLabel.color = Color.white;
             waitLabel.alignment = TextAnchor.MiddleCenter;
-            waitLabel.fontSize = 30;
-            waitLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            waitLabel.fontSize = GameTextStyling.ScaleUiFontSize(30);
+            waitLabel.font = LoadGameFont();
 
             var waitButton = waitButtonObject.GetComponent<Button>();
             var waitButtonView = waitButtonObject.GetComponent<WaitButtonView>();
@@ -157,14 +158,31 @@ namespace TetrisTactic.PlayerTurn
             textRect.offsetMax = new Vector2(-12f, -8f);
 
             var text = textObject.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 30;
+            text.font = LoadGameFont();
+            text.fontSize = GameTextStyling.ScaleUiFontSize(30);
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
 
             var view = buttonObject.GetComponent<AbilityButtonView>();
             view.BindView(buttonObject.GetComponent<Button>(), image, text);
             return view;
+        }
+
+        private static Font LoadGameFont()
+        {
+            var font = Resources.Load<Font>("bangerscyrillic");
+            if (font != null)
+            {
+                return font;
+            }
+
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font != null)
+            {
+                return font;
+            }
+
+            return Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
 
         private static void SetSlotAnchors(RectTransform rect, int slotIndex)
@@ -181,3 +199,4 @@ namespace TetrisTactic.PlayerTurn
         }
     }
 }
+

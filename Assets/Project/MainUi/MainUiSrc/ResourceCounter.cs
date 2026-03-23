@@ -1,3 +1,4 @@
+using TetrisTactic.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,7 +20,8 @@ namespace TetrisTactic.MainUi
                 return;
             }
 
-            amountText.text = $"Resource: {amount}";
+            GameTextStyling.SetUiText(amountText, $"Resource: {amount}");
         }
     }
 }
+

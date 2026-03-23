@@ -1,4 +1,5 @@
 using System;
+using TetrisTactic.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,12 +20,12 @@ namespace TetrisTactic.FinishFlow
         {
             if (titleText != null)
             {
-                titleText.text = isVictory ? "Victory" : "Defeat";
+                GameTextStyling.SetUiText(titleText, isVictory ? "Victory" : "Defeat");
             }
 
             if (resourceAmountText != null)
             {
-                resourceAmountText.text = $"+{Mathf.Max(0, resourceAmount)}";
+                GameTextStyling.SetUiText(resourceAmountText, $"+{Mathf.Max(0, resourceAmount)}");
             }
 
             if (victoryBonusBlock != null)
@@ -34,7 +35,7 @@ namespace TetrisTactic.FinishFlow
 
             if (victoryBonusText != null)
             {
-                victoryBonusText.text = $"+{Mathf.Max(0, victoryBonusAmount)}";
+                GameTextStyling.SetUiText(victoryBonusText, $"+{Mathf.Max(0, victoryBonusAmount)}");
             }
 
             gameObject.SetActive(true);
@@ -81,3 +82,4 @@ namespace TetrisTactic.FinishFlow
         }
     }
 }
+
