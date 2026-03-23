@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TetrisTactic.Abilities;
 using TetrisTactic.Core;
 using TetrisTactic.Progression;
 using TetrisTactic.Treasure;
@@ -498,7 +499,8 @@ namespace TetrisTactic.PlayField
                 var enemyType = GetEnemyTypeForSpawn();
                 var damageBonus = activeLevelDefinition?.EnemyDamageBonus ?? 0;
                 var hpBonus = activeLevelDefinition?.EnemyHpBonus ?? 0;
-                _ = model.TryAddEnemy(unitFactory.CreateEnemy(enemyType, spawnPosition, damageBonus, hpBonus));
+                var enemyAbility = GetEnemyAbilityForSpawn(enemyType);
+                _ = model.TryAddEnemy(unitFactory.CreateEnemy(enemyType, spawnPosition, damageBonus, hpBonus, enemyAbility));
             }
 
             for (var i = 0; i < treasureCount && nextIndex < allPositions.Count; i++)
@@ -548,6 +550,17 @@ namespace TetrisTactic.PlayField
             }
 
             return activeLevelDefinition.GetRandomEnemyType(random);
+        }
+
+        private AbilityDefinition GetEnemyAbilityForSpawn(UnitType enemyType)
+        {
+            return enemyType switch
+            {
+                UnitType.Warrior => AbilityDefinition.CreatePreset(random.Next(0, 2) == 0 ? AbilityDefinitionId.OLeft : AbilityDefinitionId.ORight),
+                UnitType.Archer => AbilityDefinition.CreatePreset(AbilityDefinitionId.I),
+                UnitType.Mage => AbilityDefinition.CreatePreset(random.Next(0, 2) == 0 ? AbilityDefinitionId.LLeft : AbilityDefinitionId.LRight),
+                _ => null,
+            };
         }
 
         private List<GridPosition> BuildObstacleCandidates(PlayFieldModel model, GridPosition playerPosition)
@@ -668,7 +681,3 @@ namespace TetrisTactic.PlayField
         }
     }
 }
-
-
-
-

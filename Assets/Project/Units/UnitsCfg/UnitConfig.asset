@@ -24,3 +24,9 @@ MonoBehaviour:
   archerBaseHp: 1
   mageBaseDamage: 2
   mageBaseHp: 3
+  enemyMinPreActionDelay: 0.5
+  enemyMaxPreActionDelay: 1
+  enemyPostActionDelay: 0.25
+  enemyWaveCellDelay: 0.09
+  enemyImpactDuration: 0.12
+  enemyWaitHealAmount: 1

@@ -1,4 +1,5 @@
 using System;
+using TetrisTactic.Abilities;
 using UnityEngine;
 
 namespace TetrisTactic.Units
@@ -28,6 +29,14 @@ namespace TetrisTactic.Units
         [SerializeField, Min(1)] private int mageBaseDamage = 2;
         [SerializeField, Min(1)] private int mageBaseHp = 3;
 
+        [Header("Enemy Turn")]
+        [SerializeField, Min(0f)] private float enemyMinPreActionDelay = 0.5f;
+        [SerializeField, Min(0f)] private float enemyMaxPreActionDelay = 1f;
+        [SerializeField, Min(0f)] private float enemyPostActionDelay = 0.25f;
+        [SerializeField, Min(0.01f)] private float enemyWaveCellDelay = 0.09f;
+        [SerializeField, Min(0.01f)] private float enemyImpactDuration = 0.12f;
+        [SerializeField, Min(0)] private int enemyWaitHealAmount = 1;
+
         public int GetEnemyCount(System.Random random, int maxAvailable)
         {
             return GetCountWithinBounds(random, minEnemyCount, maxEnemyCount, maxAvailable);
@@ -38,12 +47,24 @@ namespace TetrisTactic.Units
             return GetCountWithinBounds(random, minObstacleCount, maxObstacleCount, maxAvailable);
         }
 
+        public float EnemyMinPreActionDelay => Mathf.Max(0f, enemyMinPreActionDelay);
+        public float EnemyMaxPreActionDelay => Mathf.Max(EnemyMinPreActionDelay, enemyMaxPreActionDelay);
+        public float EnemyPostActionDelay => Mathf.Max(0f, enemyPostActionDelay);
+        public float EnemyWaveCellDelay => Mathf.Max(0.01f, enemyWaveCellDelay);
+        public float EnemyImpactDuration => Mathf.Max(0.01f, enemyImpactDuration);
+        public int EnemyWaitHealAmount => Mathf.Max(0, enemyWaitHealAmount);
+
         public UnitData CreateUnitData(UnitType unitType)
         {
             return CreateUnitData(unitType, 0, 0);
         }
 
         public UnitData CreateUnitData(UnitType unitType, int damageBonus, int hpBonus)
+        {
+            return CreateUnitData(unitType, damageBonus, hpBonus, null);
+        }
+
+        public UnitData CreateUnitData(UnitType unitType, int damageBonus, int hpBonus, AbilityDefinition abilityDefinition)
         {
             var safeDamageBonus = Mathf.Max(0, damageBonus);
             var safeHpBonus = Mathf.Max(0, hpBonus);
@@ -54,22 +75,26 @@ namespace TetrisTactic.Units
                     UnitType.Player,
                     TeamType.Player,
                     playerBaseDamage + safeDamageBonus,
-                    playerBaseHp + safeHpBonus),
+                    playerBaseHp + safeHpBonus,
+                    abilityDefinition),
                 UnitType.Warrior => new UnitData(
                     UnitType.Warrior,
                     TeamType.Enemy,
                     warriorBaseDamage + safeDamageBonus,
-                    warriorBaseHp + safeHpBonus),
+                    warriorBaseHp + safeHpBonus,
+                    abilityDefinition),
                 UnitType.Archer => new UnitData(
                     UnitType.Archer,
                     TeamType.Enemy,
                     archerBaseDamage + safeDamageBonus,
-                    archerBaseHp + safeHpBonus),
+                    archerBaseHp + safeHpBonus,
+                    abilityDefinition),
                 UnitType.Mage => new UnitData(
                     UnitType.Mage,
                     TeamType.Enemy,
                     mageBaseDamage + safeDamageBonus,
-                    mageBaseHp + safeHpBonus),
+                    mageBaseHp + safeHpBonus,
+                    abilityDefinition),
                 _ => throw new ArgumentOutOfRangeException(nameof(unitType), unitType, "Unsupported unit type."),
             };
         }

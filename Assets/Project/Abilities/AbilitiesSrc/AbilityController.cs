@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TetrisTactic.Core;
 using TetrisTactic.Feedback;
@@ -11,8 +11,6 @@ namespace TetrisTactic.Abilities
 {
     public sealed class AbilityController : IInitializableController, IDisposableController
     {
-        private const int MaxAvailableAbilities = 3;
-
         private sealed class CastOption
         {
             public GridPosition BaseCell;
@@ -173,6 +171,7 @@ namespace TetrisTactic.Abilities
 
                     EnsureStartingAbilities();
                     EnforceAbilityBounds();
+                    LogAbilityQueue("cast");
                     isResolving = false;
                     currentCaster = null;
                     RefreshButtons();
@@ -184,24 +183,24 @@ namespace TetrisTactic.Abilities
 
         public bool TryGainRandomAbilityOnWait(UnitRuntimeModel caster)
         {
-            if (caster == null || abilities.Count > 2 || abilities.Count >= MaxAvailableAbilities)
+            if (caster == null || abilities.Count > abilityConfig.WaitAbilityGainThreshold || abilities.Count >= abilityConfig.MaxAvailableAbilities)
             {
                 return false;
             }
 
-            var shapeTypes = System.Enum.GetValues(typeof(AbilityShapeType));
-            var validPool = new List<AbilityShapeType>(shapeTypes.Length);
+            var gainPool = abilityConfig.RandomGainPool;
+            var validPool = new List<AbilityDefinitionId>(gainPool.Count);
 
-            for (var i = 0; i < shapeTypes.Length; i++)
+            for (var i = 0; i < gainPool.Count; i++)
             {
-                var candidateShape = (AbilityShapeType)shapeTypes.GetValue(i);
-                var candidateDefinition = AbilityDefinition.CreateDefault(candidateShape);
+                var candidateDefinitionId = gainPool[i];
+                var candidateDefinition = AbilityDefinition.CreatePreset(candidateDefinitionId);
                 if (!HasAnyValidCastWithoutSelfHit(candidateDefinition, caster.Position))
                 {
                     continue;
                 }
 
-                validPool.Add(candidateShape);
+                validPool.Add(candidateDefinitionId);
             }
 
             if (validPool.Count == 0)
@@ -209,9 +208,10 @@ namespace TetrisTactic.Abilities
                 return false;
             }
 
-            var selectedShape = validPool[random.Next(validPool.Count)];
-            abilities.Add(new AbilityRuntime(AbilityDefinition.CreateDefault(selectedShape)));
+            var selectedDefinitionId = validPool[random.Next(validPool.Count)];
+            abilities.Add(new AbilityRuntime(AbilityDefinition.CreatePreset(selectedDefinitionId)));
             EnforceAbilityBounds();
+            LogAbilityQueue("wait gain");
             RefreshButtons();
             SelectionChanged?.Invoke();
             return true;
@@ -251,26 +251,27 @@ namespace TetrisTactic.Abilities
             {
                 for (var i = 0; i < configured.Count; i++)
                 {
-                    abilities.Add(new AbilityRuntime(AbilityDefinition.CreateDefault(configured[i])));
+                    abilities.Add(new AbilityRuntime(AbilityDefinition.CreatePreset(configured[i])));
                 }
             }
 
             if (abilities.Count == 0)
             {
-                abilities.Add(new AbilityRuntime(AbilityDefinition.CreateDefault(AbilityShapeType.O)));
+                abilities.Add(new AbilityRuntime(AbilityDefinition.CreatePreset(AbilityDefinitionId.OLeft)));
             }
 
             EnforceAbilityBounds();
+            LogAbilityQueue("initialization");
         }
 
         private void EnforceAbilityBounds()
         {
             if (abilities.Count == 0)
             {
-                abilities.Add(new AbilityRuntime(AbilityDefinition.CreateDefault(AbilityShapeType.O)));
+                abilities.Add(new AbilityRuntime(AbilityDefinition.CreatePreset(AbilityDefinitionId.OLeft)));
             }
 
-            while (abilities.Count > MaxAvailableAbilities)
+            while (abilities.Count > abilityConfig.MaxAvailableAbilities)
             {
                 abilities.RemoveAt(abilities.Count - 1);
             }
@@ -406,6 +407,22 @@ namespace TetrisTactic.Abilities
             return null;
         }
 
+        private void LogAbilityQueue(string reason)
+        {
+            if (abilityConfig == null || !abilityConfig.EnableAbilityQueueDebugLogs)
+            {
+                return;
+            }
+
+            var labels = new string[abilities.Count];
+            for (var i = 0; i < abilities.Count; i++)
+            {
+                labels[i] = abilities[i].Definition.DefinitionId.ToString();
+            }
+
+            Debug.Log($"Ability queue ({reason}): [{string.Join(", ", labels)}]");
+        }
+
         private Vector3 ResolveWorldPosition(GridPosition position)
         {
             if (playFieldController.TryGetCellWorldPosition(position, out var worldPosition))
@@ -417,6 +434,3 @@ namespace TetrisTactic.Abilities
         }
     }
 }
-
-
-

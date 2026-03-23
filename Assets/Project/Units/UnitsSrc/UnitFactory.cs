@@ -1,4 +1,5 @@
 using System;
+using TetrisTactic.Abilities;
 using TetrisTactic.PlayField;
 
 namespace TetrisTactic.Units
@@ -31,12 +32,17 @@ namespace TetrisTactic.Units
 
         public UnitRuntimeModel CreateEnemy(UnitType enemyType, GridPosition position)
         {
-            return CreateEnemy(enemyType, position, 0, 0);
+            return CreateEnemy(enemyType, position, 0, 0, null);
         }
 
         public UnitRuntimeModel CreateEnemy(UnitType enemyType, GridPosition position, int damageBonus, int hpBonus)
         {
-            return new UnitRuntimeModel(unitConfig.CreateUnitData(enemyType, damageBonus, hpBonus), position);
+            return CreateEnemy(enemyType, position, damageBonus, hpBonus, null);
+        }
+
+        public UnitRuntimeModel CreateEnemy(UnitType enemyType, GridPosition position, int damageBonus, int hpBonus, AbilityDefinition abilityDefinition)
+        {
+            return new UnitRuntimeModel(unitConfig.CreateUnitData(enemyType, damageBonus, hpBonus, abilityDefinition), position);
         }
 
         public UnitType GetRandomEnemyType(Random random)

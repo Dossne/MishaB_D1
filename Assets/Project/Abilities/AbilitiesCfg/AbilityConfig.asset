@@ -14,7 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startingAbilities:
   - 0
+  - 2
+  - 3
+  randomGainPool:
+  - 0
   - 1
   - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  maxAvailableAbilities: 3
+  waitAbilityGainThreshold: 2
   waveCellDelay: 0.08
   impactDuration: 0.12
+  enableAbilityQueueDebugLogs: 0

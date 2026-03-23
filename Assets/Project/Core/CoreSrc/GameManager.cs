@@ -42,7 +42,6 @@ namespace TetrisTactic.Core
                 return;
             }
 
-            // Stage 0 bootstrap order: register GameManager first, then ConfigurationProvider.
             serviceLocator.RegisterGameManager(this);
             serviceLocator.RegisterConfigurationProvider();
         }
@@ -120,7 +119,7 @@ namespace TetrisTactic.Core
             playerTurnController = new PlayerTurnController(serviceLocator, playFieldController, abilityController);
             RegisterController(playerTurnController);
 
-            enemyTurnController = new EnemyTurnController(playFieldController, abilityController, hitFeedbackPlayer);
+            enemyTurnController = new EnemyTurnController(serviceLocator, playFieldController, abilityController, hitFeedbackPlayer);
             RegisterController(enemyTurnController);
 
             levelFlowController = new LevelFlowController(
@@ -153,6 +152,3 @@ namespace TetrisTactic.Core
         }
     }
 }
-
-
-

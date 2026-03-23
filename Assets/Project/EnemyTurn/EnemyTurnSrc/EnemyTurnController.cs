@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using TetrisTactic.Abilities;
 using TetrisTactic.Core;
@@ -11,11 +11,7 @@ namespace TetrisTactic.EnemyTurn
 {
     public sealed class EnemyTurnController : IInitializableController, IDisposableController
     {
-        private const float MinPreActionDelay = 0.5f;
-        private const float MaxPreActionDelay = 1.0f;
-        private const float PostActionDelay = 0.25f;
-        private const int WaitHealAmount = 1;
-
+        private readonly ServiceLocator serviceLocator;
         private readonly PlayFieldController playFieldController;
         private readonly AbilityController abilityController;
         private readonly HitFeedbackPlayer hitFeedbackPlayer;
@@ -26,13 +22,16 @@ namespace TetrisTactic.EnemyTurn
         private EnemyAiController enemyAiController;
         private AbilityWavePlayer enemyWavePlayer;
         private MonoBehaviour coroutineRunner;
+        private UnitConfig unitConfig;
         private bool isEnemySequenceActive;
 
         public EnemyTurnController(
+            ServiceLocator serviceLocator,
             PlayFieldController playFieldController,
             AbilityController abilityController,
             HitFeedbackPlayer hitFeedbackPlayer)
         {
+            this.serviceLocator = serviceLocator;
             this.playFieldController = playFieldController;
             this.abilityController = abilityController;
             this.hitFeedbackPlayer = hitFeedbackPlayer;
@@ -41,11 +40,12 @@ namespace TetrisTactic.EnemyTurn
         public void Initialize()
         {
             coroutineRunner ??= CreateRunner();
+            unitConfig ??= ResolveUnitConfig();
 
             var threatAnalyzer = new EnemyThreatAnalyzer(playFieldController);
             var waitLogic = new EnemyWaitLogic(playFieldController, abilityController, threatAnalyzer);
             enemyAiController = new EnemyAiController(playFieldController, threatAnalyzer, waitLogic);
-            enemyWavePlayer = new AbilityWavePlayer(0.09f, 0.12f);
+            enemyWavePlayer = new AbilityWavePlayer(unitConfig.EnemyWaveCellDelay, unitConfig.EnemyImpactDuration);
         }
 
         public void Dispose()
@@ -69,7 +69,6 @@ namespace TetrisTactic.EnemyTurn
                 return;
             }
 
-            // Enemy phase should be clean and readable: no player move/cast/danger overlays.
             playFieldController.ClearMoveHighlights();
             playFieldController.ClearAbilityHighlights();
             playFieldController.ClearEnemyDangerHighlights();
@@ -114,13 +113,13 @@ namespace TetrisTactic.EnemyTurn
                     continue;
                 }
 
-                var preActionDelay = Random.Range(MinPreActionDelay, MaxPreActionDelay);
+                var preActionDelay = Random.Range(unitConfig.EnemyMinPreActionDelay, unitConfig.EnemyMaxPreActionDelay);
                 yield return new WaitForSeconds(preActionDelay);
 
                 var decision = enemyAiController.BuildDecision(enemy, CanEnemyWait);
                 yield return ExecuteDecisionRoutine(decision);
 
-                yield return new WaitForSeconds(PostActionDelay);
+                yield return new WaitForSeconds(unitConfig.EnemyPostActionDelay);
             }
 
             waitedLastTurn.Clear();
@@ -178,7 +177,7 @@ namespace TetrisTactic.EnemyTurn
                 }
                 case EnemyActionType.Wait:
                 {
-                    if (decision.Enemy.Health.TryHeal(WaitHealAmount))
+                    if (decision.Enemy.Health.TryHeal(unitConfig.EnemyWaitHealAmount))
                     {
                         playFieldController.UpdateView();
                     }
@@ -216,12 +215,20 @@ namespace TetrisTactic.EnemyTurn
             return runnerObject.GetComponent<EnemyTurnRunnerBehaviour>();
         }
 
+        private UnitConfig ResolveUnitConfig()
+        {
+            try
+            {
+                return serviceLocator.ConfigurationProvider.GetConfig<UnitConfig>();
+            }
+            catch
+            {
+                return UnitConfig.CreateDefault();
+            }
+        }
+
         private sealed class EnemyTurnRunnerBehaviour : MonoBehaviour
         {
         }
     }
 }
-
-
-
-
