@@ -29,7 +29,10 @@ namespace TetrisTactic.PlayField
 
             spriteRenderer.sprite = sprite;
             spriteRenderer.sortingOrder = 0;
-            transform.localScale = Vector3.one * CalculateScaleToWorldSize(sprite, worldSize);
+
+            var safeWorldSize = Mathf.Max(0.01f, worldSize);
+            var spriteScale = CalculateScaleToWorldSize(sprite, safeWorldSize);
+            transform.localScale = Vector3.one * spriteScale;
 
             var collider = GetComponent<BoxCollider2D>();
             if (collider == null)
@@ -37,7 +40,11 @@ namespace TetrisTactic.PlayField
                 collider = gameObject.AddComponent<BoxCollider2D>();
             }
 
-            collider.size = Vector2.one;
+            // Keep click/tap area equal to cell size, independent from sprite aspect/import scale.
+            var colliderLocalSize = safeWorldSize / Mathf.Max(0.0001f, spriteScale);
+            collider.size = new Vector2(colliderLocalSize, colliderLocalSize);
+            collider.offset = Vector2.zero;
+
             ApplyVisualColor();
         }
 
