@@ -434,7 +434,7 @@ namespace TetrisTactic.MainUi
                 return;
             }
 
-            AddInlineIcon(buttonRect, iconName, iconSprite, 40f, new Vector2(24f, 0f));
+            AddInlineIcon(buttonRect, iconName, iconSprite, 84f, new Vector2(18f, 0f));
 
             var labelTransform = buttonRect.Find("Label");
             if (labelTransform == null)
@@ -448,7 +448,7 @@ namespace TetrisTactic.MainUi
                 return;
             }
 
-            labelRect.offsetMin = new Vector2(72f, 0f);
+            labelRect.offsetMin = new Vector2(108f, 0f);
             labelRect.offsetMax = new Vector2(-16f, 0f);
         }
 
@@ -478,3 +478,4 @@ namespace TetrisTactic.MainUi
         }
     }
 }
+

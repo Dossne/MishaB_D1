@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TetrisTactic.Abilities;
 using TetrisTactic.Treasure;
 using TetrisTactic.Units;
@@ -765,7 +765,7 @@ namespace TetrisTactic.PlayField
         private static Color GetCellColor(CellContentType contentType)
         {
             _ = contentType;
-            return Color.white;
+            return new Color(0.8f, 0.8f, 0.8f, 1f);
         }
 
         private bool TryGetPointerDownWorldPosition(out Vector2 worldPosition)
@@ -834,6 +834,9 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
+
+
 
 
 
