@@ -63,6 +63,8 @@ namespace TetrisTactic.EnemyTurn
                 return result;
             }
 
+            var player = playFieldController.GetPlayerUnit();
+
             for (var i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
@@ -81,6 +83,11 @@ namespace TetrisTactic.EnemyTurn
                     for (var cellIndex = 0; cellIndex < cells.Count; cellIndex++)
                     {
                         var cell = cells[cellIndex];
+                        if (!IsThreatCellRelevantForPlayer(cell, player))
+                        {
+                            continue;
+                        }
+
                         if (unique.Add(cell))
                         {
                             result.Add(cell);
@@ -138,6 +145,17 @@ namespace TetrisTactic.EnemyTurn
             }
 
             return int.MaxValue;
+        }
+
+        private bool IsThreatCellRelevantForPlayer(GridPosition cell, UnitRuntimeModel player)
+        {
+            if (player == null)
+            {
+                return playFieldController.IsInside(cell);
+            }
+
+            // Highlight only cells that can matter for player positioning.
+            return playFieldController.IsCellPassableForMovement(cell, player);
         }
 
         private HashSet<GridPosition> BuildThreatStandPositions(UnitRuntimeModel enemy, GridPosition targetPosition)

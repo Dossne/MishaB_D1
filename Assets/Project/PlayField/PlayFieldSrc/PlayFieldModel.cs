@@ -46,12 +46,12 @@ namespace TetrisTactic.PlayField
                 return CellContentType.Empty;
             }
 
-            if (PlayerUnit != null && PlayerUnit.Position == position)
+            if (IsActiveUnit(PlayerUnit) && PlayerUnit.Position == position)
             {
                 return CellContentType.Player;
             }
 
-            if (unitsByPosition.TryGetValue(position, out var unit))
+            if (TryGetUnitAt(position, out var unit))
             {
                 return unit.TeamType == TeamType.Enemy
                     ? CellContentType.Enemy
@@ -70,12 +70,24 @@ namespace TetrisTactic.PlayField
 
         public bool HasUnitAt(GridPosition position)
         {
-            return unitsByPosition.ContainsKey(position);
+            return unitsByPosition.TryGetValue(position, out var unit) && IsActiveUnit(unit);
         }
 
         public bool TryGetUnitAt(GridPosition position, out UnitRuntimeModel unit)
         {
-            return unitsByPosition.TryGetValue(position, out unit);
+            unit = null;
+            if (!unitsByPosition.TryGetValue(position, out var candidate))
+            {
+                return false;
+            }
+
+            if (!IsActiveUnit(candidate))
+            {
+                return false;
+            }
+
+            unit = candidate;
+            return true;
         }
 
         public bool HasTreasureAt(GridPosition position)
@@ -176,7 +188,7 @@ namespace TetrisTactic.PlayField
 
         public bool TryMoveUnit(UnitRuntimeModel unit, GridPosition destination)
         {
-            if (unit == null || !IsInside(destination))
+            if (unit == null || !IsActiveUnit(unit) || !IsInside(destination))
             {
                 return false;
             }
@@ -205,14 +217,18 @@ namespace TetrisTactic.PlayField
 
         public IEnumerable<UnitRuntimeModel> GetAllUnits()
         {
-            if (PlayerUnit != null)
+            if (IsActiveUnit(PlayerUnit))
             {
                 yield return PlayerUnit;
             }
 
             for (var i = 0; i < enemies.Count; i++)
             {
-                yield return enemies[i];
+                var enemy = enemies[i];
+                if (IsActiveUnit(enemy))
+                {
+                    yield return enemy;
+                }
             }
         }
 
@@ -229,6 +245,11 @@ namespace TetrisTactic.PlayField
         private bool CanPlaceOn(GridPosition position)
         {
             return IsInside(position) && IsEmpty(position);
+        }
+
+        private static bool IsActiveUnit(UnitRuntimeModel unit)
+        {
+            return unit != null && unit.Health != null && unit.Health.IsAlive;
         }
     }
 }
