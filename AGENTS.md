@@ -2,16 +2,44 @@
 
 ## Project intent
 
-This repository contains a Unity 2D prototype for **Farm Merger**:
-a cozy merge game with a farm fantasy theme.
+This repository contains a Unity 2D prototype for **TetrisTactic**
+a tactic turn-based 2d game.
 
 Primary goal:
-- quickly explore and validate the core merge loop
+- quickly explore and validate the core gameplay loop 
 
 Secondary goals:
 - keep the project easy to iterate on
 - avoid unnecessary complexity
 - preserve project stability inside Unity
+
+## Implementation source of truth
+
+Full project specification is stored in:
+- `Docs/TetrisTactic_TechSpec.md`
+
+Codex must treat this file as the main implementation specification for the project.
+
+If there is a conflict between an ad-hoc implementation choice and the specification,
+prefer the specification unless the user explicitly overrides it.
+
+## Execution workflow for Codex
+
+- Implement strictly one stage at a time.
+- Never continue to the next stage automatically.
+- Stop at the end of every completed stage.
+- After each stage, report:
+  - what was implemented;
+  - which files, prefabs, ScriptableObjects, scenes, or folders were added or changed;
+  - what gameplay loop or interaction loop is currently available to the player;
+  - what was not verified if Unity/editor execution was not available.
+- At the end of each stage, explicitly ask the user to:
+  - test the current stage in Unity or a build;
+  - report bugs or UX issues;
+  - confirm when to continue to the next stage.
+- If bugs are reported for the current stage, fix them before moving to the next stage.
+- Do not treat a stage as complete if the vertical slice for that stage is not runnable.
+- Keep changes scoped to the active stage unless a small supporting fix is required for stability.
 
 ## Repository priorities
 
@@ -25,7 +53,7 @@ Do not over-engineer early systems unless explicitly requested.
 
 ## Important directories
 
-- `Assets/` — gameplay code, scenes, prefabs, art, ScriptableObjects
+- `Assets/Project/` — gameplay code, scenes, prefabs, art, ScriptableObjects
 - `Packages/` — Unity package configuration
 - `ProjectSettings/` — engine/project settings
 
