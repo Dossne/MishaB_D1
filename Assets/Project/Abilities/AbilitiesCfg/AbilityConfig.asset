@@ -26,21 +26,34 @@ MonoBehaviour:
   - 6
   buttonIcons:
   - definitionId: 0
-    icon: {fileID: 2583816018211610179, guid: d80168d46a54fda4d9acec2625ab0d5b, type: 3}
+    icon: {fileID: 21300000, guid: d80168d46a54fda4d9acec2625ab0d5b, type: 3}
   - definitionId: 1
-    icon: {fileID: -7979142137282503250, guid: 6599362458fb4114591c846ab5555cae, type: 3}
+    icon: {fileID: 21300000, guid: 6599362458fb4114591c846ab5555cae, type: 3}
   - definitionId: 2
-    icon: {fileID: -1785357414251982577, guid: 6746d0ecf29ad5a448c6325bafea09eb, type: 3}
+    icon: {fileID: 21300000, guid: 6746d0ecf29ad5a448c6325bafea09eb, type: 3}
   - definitionId: 3
-    icon: {fileID: -1545729993427580898, guid: e4d3b67bc0ce2b64aa35a42a904f6bee, type: 3}
+    icon: {fileID: 21300000, guid: e4d3b67bc0ce2b64aa35a42a904f6bee, type: 3}
   - definitionId: 4
-    icon: {fileID: -6009885300799445423, guid: ea6488e3b39429742939c8479f9e2850, type: 3}
+    icon: {fileID: 21300000, guid: ea6488e3b39429742939c8479f9e2850, type: 3}
   - definitionId: 5
-    icon: {fileID: -1182827721247122346, guid: f1be6f04dfb615343b6cb9577913ca40, type: 3}
+    icon: {fileID: 21300000, guid: f1be6f04dfb615343b6cb9577913ca40, type: 3}
   - definitionId: 6
-    icon: {fileID: -5465646382484160345, guid: 4191275ca3ee4834b8365880a399c439, type: 3}
+    icon: {fileID: 21300000, guid: 4191275ca3ee4834b8365880a399c439, type: 3}
+  unitAbilityIcons:
+  - unitType: 0
+    icon: {fileID: 21300000, guid: 4be72de2e5b3d004ba2719cb806a7a96, type: 3}
+  - unitType: 1
+    icon: {fileID: 21300000, guid: af9752b4230218749b6d0baf907a9c5d, type: 3}
+  - unitType: 2
+    icon: {fileID: 21300000, guid: 07ce2e923c59bec4e9997606be124862, type: 3}
+  - unitType: 3
+    icon: {fileID: 21300000, guid: b8ae600071b472a45b93ef6757d74d63, type: 3}
+  damageIcon: {fileID: 21300000, guid: 062b4dd51acfdcb419cf0aac9146e449, type: 3}
+  healthIcon: {fileID: 21300000, guid: 7f323b82bd3946140a12d2cb48dd8a6f, type: 3}
+  resourceIcon: {fileID: 21300000, guid: d2904e73c36e0de4683ae6bff434af16, type: 3}
   maxAvailableAbilities: 3
   waitAbilityGainThreshold: 2
   waveCellDelay: 0.08
   impactDuration: 0.12
   enableAbilityQueueDebugLogs: 0
+

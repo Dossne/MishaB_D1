@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TetrisTactic.Abilities;
 using TetrisTactic.Core;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -18,10 +19,22 @@ namespace TetrisTactic.Units
         [SerializeField] private SpriteRenderer spriteRenderer;
 
         private static Sprite fallbackSprite;
+        private static UnitConfig configuredUnitConfig;
         private static readonly Dictionary<UnitType, Sprite> UnitSpriteCache = new();
         private static readonly Dictionary<string, Sprite> StatSpriteCache = new();
         private Transform labelRoot;
 
+
+        public static void SetUnitConfig(UnitConfig config)
+        {
+            if (configuredUnitConfig == config)
+            {
+                return;
+            }
+
+            configuredUnitConfig = config;
+            UnitSpriteCache.Clear();
+        }
         public void Initialize(UnitRuntimeModel model, float cellWorldSize, Color tint)
         {
             _ = tint;
@@ -105,7 +118,7 @@ namespace TetrisTactic.Units
 
             CreateOrRefreshStatIcon(
                 "HpIconBg",
-                ResolveStatSprite("health", "Assets/Project/Abilities/AbilitiesArt/health.png"),
+                ResolveStatSprite("health"),
                 cornerPosition,
                 cellWorldSize,
                 sortingOrder: 20);
@@ -141,7 +154,7 @@ namespace TetrisTactic.Units
 
             CreateOrRefreshStatIcon(
                 "DamageIconBg",
-                ResolveStatSprite("damage", "Assets/Project/Abilities/AbilitiesArt/damage.png"),
+                ResolveStatSprite("damage"),
                 cornerPosition,
                 cellWorldSize,
                 sortingOrder: 21);
@@ -340,7 +353,6 @@ namespace TetrisTactic.Units
             var y = isTop ? edgeOffset : -edgeOffset;
             return new Vector3(-edgeOffset, y, -0.12f);
         }
-
         private static Sprite ResolveUnitSprite(UnitType unitType)
         {
             if (UnitSpriteCache.TryGetValue(unitType, out var cached) && cached != null)
@@ -348,35 +360,31 @@ namespace TetrisTactic.Units
                 return cached;
             }
 
-            var fileName = unitType switch
-            {
-                UnitType.Player => "player",
-                UnitType.Warrior => "warrior",
-                UnitType.Archer => "archer",
-                UnitType.Mage => "mage",
-                _ => string.Empty,
-            };
-
-            if (string.IsNullOrEmpty(fileName))
-            {
-                return null;
-            }
-
-            var sprite = Resources.Load<Sprite>($"Project/Units/UnitsArt/{fileName}");
+            var sprite = configuredUnitConfig?.GetUnitSprite(unitType);
 
 #if UNITY_EDITOR
             if (sprite == null)
             {
-                var editorPath = $"Assets/Project/Units/UnitsArt/{fileName}.png";
-                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(editorPath);
+                var editorPath = unitType switch
+                {
+                    UnitType.Player => "Assets/Project/Units/UnitsArt/player.png",
+                    UnitType.Warrior => "Assets/Project/Units/UnitsArt/warrior.png",
+                    UnitType.Archer => "Assets/Project/Units/UnitsArt/archer.png",
+                    UnitType.Mage => "Assets/Project/Units/UnitsArt/mage.png",
+                    _ => string.Empty,
+                };
+
+                if (!string.IsNullOrEmpty(editorPath))
+                {
+                    sprite = AssetDatabase.LoadAssetAtPath<Sprite>(editorPath);
+                }
             }
 #endif
 
             UnitSpriteCache[unitType] = sprite;
             return sprite;
         }
-
-        private static Sprite ResolveStatSprite(string name, string editorPath)
+        private static Sprite ResolveStatSprite(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -388,18 +396,15 @@ namespace TetrisTactic.Units
                 return cached;
             }
 
-            var sprite = Resources.Load<Sprite>($"Project/Abilities/AbilitiesArt/{name}");
-#if UNITY_EDITOR
-            if (sprite == null && !string.IsNullOrEmpty(editorPath))
-            {
-                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(editorPath);
-            }
-#endif
+            var sprite = name == "damage"
+                ? AbilityIconResolver.GetDamageIcon()
+                : name == "health"
+                    ? AbilityIconResolver.GetHealthIcon()
+                    : null;
 
             StatSpriteCache[name] = sprite;
             return sprite;
         }
-
         private static float CalculateScaleToFitCell(Sprite sprite, float cellWorldSize)
         {
             var safeCellSize = Mathf.Max(0.01f, cellWorldSize);

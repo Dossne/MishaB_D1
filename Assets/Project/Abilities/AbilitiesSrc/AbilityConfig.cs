@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TetrisTactic.Units;
 using UnityEngine;
 
 namespace TetrisTactic.Abilities
@@ -7,6 +8,13 @@ namespace TetrisTactic.Abilities
     public sealed class AbilityButtonIconEntry
     {
         public AbilityDefinitionId definitionId;
+        public Sprite icon;
+    }
+
+    [System.Serializable]
+    public sealed class UnitAbilityIconEntry
+    {
+        public UnitType unitType;
         public Sprite icon;
     }
 
@@ -32,6 +40,10 @@ namespace TetrisTactic.Abilities
         };
 
         [SerializeField] private List<AbilityButtonIconEntry> buttonIcons = new();
+        [SerializeField] private List<UnitAbilityIconEntry> unitAbilityIcons = new();
+        [SerializeField] private Sprite damageIcon;
+        [SerializeField] private Sprite healthIcon;
+        [SerializeField] private Sprite resourceIcon;
         [SerializeField, Min(1)] private int maxAvailableAbilities = 3;
         [SerializeField, Min(0)] private int waitAbilityGainThreshold = 2;
         [SerializeField, Min(0.01f)] private float waveCellDelay = 0.08f;
@@ -60,9 +72,39 @@ namespace TetrisTactic.Abilities
             return null;
         }
 
+        public Sprite GetUnitAbilityIcon(UnitType unitType)
+        {
+            for (var i = 0; i < unitAbilityIcons.Count; i++)
+            {
+                var entry = unitAbilityIcons[i];
+                if (entry != null && entry.unitType == unitType)
+                {
+                    return entry.icon;
+                }
+            }
+
+            return null;
+        }
+
+        public Sprite GetDamageIcon()
+        {
+            return damageIcon;
+        }
+
+        public Sprite GetHealthIcon()
+        {
+            return healthIcon;
+        }
+
+        public Sprite GetResourceIcon()
+        {
+            return resourceIcon;
+        }
+
         public static AbilityConfig CreateDefault()
         {
             return CreateInstance<AbilityConfig>();
         }
     }
 }
+

@@ -10,6 +10,12 @@ namespace TetrisTactic.PlayField
         [SerializeField, Min(0.1f)] private float cellWorldSize = 1f;
         [SerializeField] private Vector2 boardWorldOffset = new Vector2(0f, 0.9f);
 
+        [Header("Art")]
+        [SerializeField] private Sprite grassSprite;
+        [SerializeField] private Sprite obstacleSprite;
+        [SerializeField] private Sprite treasureSprite;
+        [SerializeField] private Sprite movePreviewSprite;
+
         [Header("Cell Colors")]
         [SerializeField] private Color emptyCellColor = new Color(0.2f, 0.24f, 0.3f, 1f);
         [SerializeField] private Color playerCellColor = new Color(0.22f, 0.78f, 0.32f, 1f);
@@ -21,6 +27,10 @@ namespace TetrisTactic.PlayField
         public int Rows => Mathf.Max(1, rows);
         public float CellWorldSize => Mathf.Max(0.1f, cellWorldSize);
         public Vector2 BoardWorldOffset => boardWorldOffset;
+        public Sprite GrassSprite => grassSprite;
+        public Sprite ObstacleSprite => obstacleSprite;
+        public Sprite TreasureSprite => treasureSprite;
+        public Sprite MovePreviewSprite => movePreviewSprite;
         public Color EmptyCellColor => emptyCellColor;
         public Color PlayerCellColor => playerCellColor;
         public Color EnemyCellColor => enemyCellColor;
@@ -33,5 +43,4 @@ namespace TetrisTactic.PlayField
         }
     }
 }
-
 

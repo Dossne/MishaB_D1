@@ -474,51 +474,37 @@ namespace TetrisTactic.PlayField
 
             transform.position = new Vector3(playFieldConfig.BoardWorldOffset.x, playFieldConfig.BoardWorldOffset.y, transform.position.z);
         }
-
         private void EnsureArtSpritesLoaded()
         {
-            grassCellSprite ??= LoadPlayFieldArtSprite("grass");
-            obstacleCellSprite ??= LoadPlayFieldArtSprite("obstacle");
-            treasureCellSprite ??= LoadPlayFieldArtSprite("treasure");
-            movePreviewSprite ??= LoadPlayerTurnArtSprite("move");
-        }
-
-        private static Sprite LoadPlayFieldArtSprite(string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName))
+            if (playFieldConfig != null)
             {
-                return null;
+                grassCellSprite = playFieldConfig.GrassSprite;
+                obstacleCellSprite = playFieldConfig.ObstacleSprite;
+                treasureCellSprite = playFieldConfig.TreasureSprite;
+                movePreviewSprite = playFieldConfig.MovePreviewSprite;
             }
-
-            var sprite = Resources.Load<Sprite>($"Project/PlayField/PlayFieldArt/{fileName}");
 
 #if UNITY_EDITOR
-            if (sprite == null)
+            if (grassCellSprite == null)
             {
-                sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Project/PlayField/PlayFieldArt/{fileName}.png");
+                grassCellSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Project/PlayField/PlayFieldArt/grass.png");
+            }
+
+            if (obstacleCellSprite == null)
+            {
+                obstacleCellSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Project/PlayField/PlayFieldArt/obstacle.png");
+            }
+
+            if (treasureCellSprite == null)
+            {
+                treasureCellSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Project/PlayField/PlayFieldArt/treasure.png");
+            }
+
+            if (movePreviewSprite == null)
+            {
+                movePreviewSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Project/PlayerTurn/PlayerTurnArt/move.png");
             }
 #endif
-
-            return sprite;
-        }
-
-        private static Sprite LoadPlayerTurnArtSprite(string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName))
-            {
-                return null;
-            }
-
-            var sprite = Resources.Load<Sprite>($"Project/PlayerTurn/PlayerTurnArt/{fileName}");
-
-#if UNITY_EDITOR
-            if (sprite == null)
-            {
-                sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Project/PlayerTurn/PlayerTurnArt/{fileName}.png");
-            }
-#endif
-
-            return sprite;
         }
 
         private static float CalculateSpriteScale(Sprite sprite, float targetSize)
@@ -846,3 +832,5 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+
+

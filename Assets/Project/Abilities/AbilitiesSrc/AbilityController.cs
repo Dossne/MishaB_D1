@@ -232,6 +232,8 @@ namespace TetrisTactic.Abilities
             {
                 abilityConfig = AbilityConfig.CreateDefault();
             }
+
+            AbilityIconResolver.SetAbilityConfig(abilityConfig);
         }
 
         private void EnsureWavePlayer()
@@ -437,3 +439,4 @@ namespace TetrisTactic.Abilities
         }
     }
 }
+

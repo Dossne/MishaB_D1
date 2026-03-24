@@ -448,6 +448,7 @@ namespace TetrisTactic.PlayField
                 }
             }
 
+            UnitView.SetUnitConfig(unitConfig);
             unitFactory ??= new UnitFactory(unitConfig);
         }
 
@@ -681,3 +682,4 @@ namespace TetrisTactic.PlayField
         }
     }
 }
+

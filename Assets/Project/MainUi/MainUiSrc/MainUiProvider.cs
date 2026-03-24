@@ -1,3 +1,4 @@
+using TetrisTactic.Abilities;
 using TetrisTactic.Core;
 using TetrisTactic.FinishFlow;
 using UnityEngine;
@@ -6,9 +7,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 #endif
 using UnityEngine.UI;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace TetrisTactic.MainUi
 {
@@ -133,9 +131,28 @@ namespace TetrisTactic.MainUi
 
         private void EnsureUiSpritesLoaded()
         {
-            resourceIconSprite ??= LoadSprite("Project/Resource/ResourceArt/resource", "Assets/Project/Resource/ResourceArt/resource.png");
-            damageIconSprite ??= LoadSprite("Project/Abilities/AbilitiesArt/damage", "Assets/Project/Abilities/AbilitiesArt/damage.png");
-            healthIconSprite ??= LoadSprite("Project/Abilities/AbilitiesArt/health", "Assets/Project/Abilities/AbilitiesArt/health.png");
+            TryBindAbilityIconConfig();
+            resourceIconSprite ??= AbilityIconResolver.GetResourceIcon();
+            damageIconSprite ??= AbilityIconResolver.GetDamageIcon();
+            healthIconSprite ??= AbilityIconResolver.GetHealthIcon();
+        }
+
+        private void TryBindAbilityIconConfig()
+        {
+            if (serviceLocator == null || serviceLocator.ConfigurationProvider == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var abilityConfig = serviceLocator.ConfigurationProvider.GetConfig<AbilityConfig>();
+                AbilityIconResolver.SetAbilityConfig(abilityConfig);
+            }
+            catch
+            {
+                // Keep existing fallback loading when config is not available.
+            }
         }
 
         private void EnsureResourceCounter()
@@ -508,20 +525,6 @@ namespace TetrisTactic.MainUi
             labelRect.offsetMax = new Vector2(-16f, 0f);
         }
 
-        private static Sprite LoadSprite(string resourcesPath, string editorAssetPath)
-        {
-            var sprite = Resources.Load<Sprite>(resourcesPath);
-
-#if UNITY_EDITOR
-            if (sprite == null)
-            {
-                sprite = AssetDatabase.LoadAssetAtPath<Sprite>(editorAssetPath);
-            }
-#endif
-
-            return sprite;
-        }
-
         private static Font LoadBuiltinFont()
         {
             var font = Resources.Load<Font>("bangerscyrillic");
@@ -541,9 +544,4 @@ namespace TetrisTactic.MainUi
 
     }
 }
-
-
-
-
-
 

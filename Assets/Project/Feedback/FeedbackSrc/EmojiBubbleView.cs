@@ -1,11 +1,13 @@
 using System.Collections;
-using TetrisTactic.Core;
 using UnityEngine;
 
 namespace TetrisTactic.Feedback
 {
     public sealed class EmojiBubbleView : MonoBehaviour
     {
+        private const float DamageTextCharacterSize = 0.11f;
+        private const int DamageTextFontSize = 26;
+
         private TextMesh textMesh;
 
         public void Show(string value, Color color, float lifetime)
@@ -17,7 +19,7 @@ namespace TetrisTactic.Feedback
             }
 
             EnsureTextMesh();
-            GameTextStyling.SetWorldText(textMesh, value);
+            textMesh.text = value;
             textMesh.color = color;
             StartCoroutine(PlayRoutine(Mathf.Max(0.12f, lifetime)));
         }
@@ -36,15 +38,22 @@ namespace TetrisTactic.Feedback
             textMesh = labelObject.GetComponent<TextMesh>();
             textMesh.anchor = TextAnchor.MiddleCenter;
             textMesh.alignment = TextAlignment.Center;
-            textMesh.characterSize = 0.17f;
-            textMesh.fontSize = 72;
+            textMesh.characterSize = DamageTextCharacterSize;
+            textMesh.fontSize = DamageTextFontSize;
             textMesh.font = LoadGameFont();
+            textMesh.richText = false;
+            textMesh.lineSpacing = 1f;
+            textMesh.tabSize = 4f;
             textMesh.color = Color.white;
 
             var renderer = textMesh.GetComponent<MeshRenderer>();
             if (renderer != null)
             {
                 renderer.sortingOrder = 45;
+                if (textMesh.font != null && textMesh.font.material != null)
+                {
+                    renderer.sharedMaterial = textMesh.font.material;
+                }
             }
         }
 
@@ -95,4 +104,3 @@ namespace TetrisTactic.Feedback
         }
     }
 }
-

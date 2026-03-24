@@ -1,9 +1,17 @@
 using System;
+using System.Collections.Generic;
 using TetrisTactic.Abilities;
 using UnityEngine;
 
 namespace TetrisTactic.Units
 {
+    [System.Serializable]
+    public sealed class UnitSpriteEntry
+    {
+        public UnitType unitType;
+        public Sprite sprite;
+    }
+
     [CreateAssetMenu(menuName = "Project/Units/Unit Config", fileName = "UnitConfig")]
     public sealed class UnitConfig : ScriptableObject
     {
@@ -12,6 +20,9 @@ namespace TetrisTactic.Units
         [SerializeField, Min(1)] private int maxEnemyCount = 3;
         [SerializeField, Min(0)] private int minObstacleCount = 4;
         [SerializeField, Min(0)] private int maxObstacleCount = 6;
+
+        [Header("Art")]
+        [SerializeField] private List<UnitSpriteEntry> unitSprites = new();
 
         [Header("Player")]
         [SerializeField, Min(1)] private int playerBaseDamage = 1;
@@ -53,6 +64,20 @@ namespace TetrisTactic.Units
         public float EnemyWaveCellDelay => Mathf.Max(0.01f, enemyWaveCellDelay);
         public float EnemyImpactDuration => Mathf.Max(0.01f, enemyImpactDuration);
         public int EnemyWaitHealAmount => Mathf.Max(0, enemyWaitHealAmount);
+
+        public Sprite GetUnitSprite(UnitType unitType)
+        {
+            for (var i = 0; i < unitSprites.Count; i++)
+            {
+                var entry = unitSprites[i];
+                if (entry != null && entry.unitType == unitType)
+                {
+                    return entry.sprite;
+                }
+            }
+
+            return null;
+        }
 
         public UnitData CreateUnitData(UnitType unitType)
         {
@@ -124,3 +149,4 @@ namespace TetrisTactic.Units
         }
     }
 }
+

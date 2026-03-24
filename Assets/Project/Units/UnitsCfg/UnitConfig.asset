@@ -16,6 +16,15 @@ MonoBehaviour:
   maxEnemyCount: 3
   minObstacleCount: 4
   maxObstacleCount: 6
+  unitSprites:
+  - unitType: 0
+    sprite: {fileID: 21300000, guid: 45e316623eff2774fbc4e41ff36d1331, type: 3}
+  - unitType: 1
+    sprite: {fileID: 21300000, guid: 03f9df27da00f6544a2bf2c0cd3d4c88, type: 3}
+  - unitType: 2
+    sprite: {fileID: 21300000, guid: 93eb80aab4c9a634d9443f3f85dacbb0, type: 3}
+  - unitType: 3
+    sprite: {fileID: 21300000, guid: e90206515cfa2fa4e98fb6a8c0eb5d51, type: 3}
   playerBaseDamage: 1
   playerBaseHp: 1
   warriorBaseDamage: 3
@@ -30,3 +39,4 @@ MonoBehaviour:
   enemyWaveCellDelay: 0.09
   enemyImpactDuration: 0.12
   enemyWaitHealAmount: 1
+

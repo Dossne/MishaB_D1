@@ -16,10 +16,13 @@ MonoBehaviour:
   rows: 8
   cellWorldSize: 1
   boardWorldOffset: {x: 0, y: 0.9}
+  grassSprite: {fileID: 21300000, guid: e70e1018abd9efd40a97907632527aab, type: 3}
+  obstacleSprite: {fileID: 21300000, guid: 2d4b675f6ffd8e640b58b37307242f6c, type: 3}
+  treasureSprite: {fileID: 21300000, guid: 1c71f371e6c64de408100a919f3894bb, type: 3}
+  movePreviewSprite: {fileID: 21300000, guid: cec39bb8633a4c245bbe83498038b803, type: 3}
   emptyCellColor: {r: 0.2, g: 0.24, b: 0.3, a: 1}
   playerCellColor: {r: 0.22, g: 0.78, b: 0.32, a: 1}
   enemyCellColor: {r: 0.86, g: 0.2, b: 0.2, a: 1}
   treasureCellColor: {r: 1, g: 0.82, b: 0.18, a: 1}
   obstacleCellColor: {r: 0.43, g: 0.45, b: 0.5, a: 1}
-
 
